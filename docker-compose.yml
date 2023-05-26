@@ -9,7 +9,7 @@ services:
     depends_on:
       - stats-db
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/stats-db
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://stats-db:5432/stats-db
       - POSTGRES_USERNAME=ewm_stat_user
       - POSTGRES_PASSWORD=ewm_stat_password
       - TZ=GMT
@@ -38,7 +38,7 @@ services:
       - ewm-db
       - stats-server
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5433/ewm-db
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://ewm-db:5433/ewm-db
       - POSTGRES_USERNAME=ewm_main_user
       - POSTGRES_PASSWORD=ewm_main_password
       - TZ=GMT
