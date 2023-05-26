@@ -1,4 +1,4 @@
-package client;
+package ru.practicum.client;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,7 +14,7 @@ import java.util.Map;
 @Service
 public class StatClient extends BaseClient {
 
-    private static final String API_STATS_PREFIX = "/stats";
+    private static final String API_STATS_PREFIX = "/ru/practicum/stats";
 
     @Autowired
     public StatClient(@Value("${ewm-stats.url}") String serverUrl, RestTemplateBuilder builder) {

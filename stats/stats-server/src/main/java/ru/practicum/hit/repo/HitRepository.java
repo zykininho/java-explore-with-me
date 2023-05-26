@@ -1,8 +1,11 @@
-package hit.repo;
+package ru.practicum.hit.repo;
 
-import hit.model.EndpointHit;
+import org.springframework.stereotype.Repository;
+import ru.practicum.hit.model.EndpointHit;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+
+@Repository
 public interface HitRepository extends JpaRepository<EndpointHit, Long> {
 
 

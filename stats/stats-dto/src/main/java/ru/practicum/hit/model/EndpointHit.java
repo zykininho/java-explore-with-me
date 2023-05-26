@@ -1,4 +1,4 @@
-package hit.model;
+package ru.practicum.hit.model;
 
 import lombok.*;
 import javax.persistence.*;

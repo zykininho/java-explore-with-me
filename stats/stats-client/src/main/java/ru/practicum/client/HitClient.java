@@ -1,6 +1,6 @@
-package client;
+package ru.practicum.client;
 
-import hit.dto.EndpointHitDto;
+import ru.practicum.hit.dto.EndpointHitDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -12,7 +12,7 @@ import org.springframework.web.util.DefaultUriBuilderFactory;
 @Service
 public class HitClient extends BaseClient {
 
-    private static final String API_HIT_PREFIX = "/hit";
+    private static final String API_HIT_PREFIX = "/ru/practicum/hit";
 
     @Autowired
     public HitClient(@Value("${ewm-stats.url}") String serverUrl, RestTemplateBuilder builder) {
