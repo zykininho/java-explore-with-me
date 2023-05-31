@@ -1,15 +1,59 @@
 version: '3.1'
 services:
   stats-server:
+    build: stats/stats-server
+    image: explore-with-me-stat-server-image
+    container_name: explore-with-me-stat-server-container
     ports:
       - "9090:9090"
+    depends_on:
+      - stats-db
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://stats-db:5432/stats-db
+      - POSTGRES_USERNAME=ewm_stat_user
+      - POSTGRES_PASSWORD=ewm_stat_password
+      - TZ=GMT
+    restart: on-failure
 
   stats-db:
     image: postgres:14-alpine
+    container_name: explore-with-me-stats-db-container
+    ports:
+      - "6541:5432"
+    volumes:
+      - /var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=stats-db
+      - POSTGRES_USER=ewm_stat_user
+      - POSTGRES_PASSWORD=ewm_stat_password
+      - TZ=GMT
 
   ewm-service:
+    build: main-service
+    image: explore-with-me-main-service-image
+    container_name: explore-with-me-main-service-container
     ports:
       - "8080:8080"
+    depends_on:
+      - ewm-db
+      - stats-server
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://ewm-db:5433/ewm-db
+      - POSTGRES_USERNAME=ewm_main_user
+      - POSTGRES_PASSWORD=ewm_main_password
+      - TZ=GMT
+      - EWM_STATS_URL=http://stats-server:9090
+    restart: on-failure
 
   ewm-db:
     image: postgres:14-alpine
+    container_name: explore-with-me-ewm-db-container
+    ports:
+      - "6542:5433"
+    volumes:
+      - /var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=ewm-db
+      - POSTGRES_USER=ewm_main_user
+      - POSTGRES_PASSWORD=ewm_main_password
+      - TZ=GMT
