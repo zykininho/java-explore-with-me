@@ -98,8 +98,9 @@ public class UserServiceImpl implements UserService {
     }
 
     public void deleteUser(long userId) {
-        User foundUser = findUser(userId);
-        userRepository.delete(foundUser);
+        User user = findUser(userId);
+        userRepository.delete(user);
+        log.info("Удален пользователь {}", user);
     }
 
     private User findUser(long userId) {
