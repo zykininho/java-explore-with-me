@@ -17,7 +17,7 @@ public class EventFullDto {
     private long id;
     private String annotation;
     private CategoryDto category;
-    private Request[] confirmedRequests;
+    private int confirmedRequests;
     private LocalDateTime createdOn;
     private String description;
     private LocalDateTime eventDate;
