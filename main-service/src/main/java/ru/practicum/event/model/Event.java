@@ -2,11 +2,13 @@ package ru.practicum.event.model;
 
 import lombok.*;
 import ru.practicum.category.model.Category;
+import ru.practicum.compilation.model.Compilation;
 import ru.practicum.location.model.Location;
 import ru.practicum.user.model.User;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Data
@@ -61,6 +63,11 @@ public class Event {
 
     @Enumerated(EnumType.STRING)
     private EventState state;
+
+    @ManyToMany
+    @JoinTable(name = "compilation_events", joinColumns = @JoinColumn(name = "event_id", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "compilation_id", referencedColumnName = "id"))
+    private List<Compilation> compilations;
 
     @Override
     public boolean equals(Object o) {
