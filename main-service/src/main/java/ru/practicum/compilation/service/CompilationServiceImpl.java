@@ -37,7 +37,7 @@ public class CompilationServiceImpl implements CompilationService {
         if (pinned == null) {
             compilations = compilationRepository.findAll(PageRequest.of(from, size)).getContent();
         } else {
-            compilations = compilationRepository.findAllAndPinnedIs(pinned, PageRequest.of(from, size));
+            compilations = compilationRepository.findAllByPinned(pinned, PageRequest.of(from, size));
         }
         log.info("Найдены подборки событий {}", compilations);
         return compilations.stream()

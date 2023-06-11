@@ -39,13 +39,7 @@ public class EventController {
                                                       @RequestParam(defaultValue = "10") Integer size,
                                                       HttpServletRequest request) {
         log.info("Received GET-request at /events endpoint");
-        EndpointHitDto endpointHit = EndpointHitDto.builder()
-                .app("ewm-main-service")
-                .uri(request.getRequestURI())
-                .ip(request.getRemoteAddr())
-                .timestamp(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
-                .build();
-        hitClient.postHit(endpointHit);
+        addStat(request);
         return ResponseEntity.ok().body(eventService.getAll(text,
                 categories,
                 paid,
@@ -60,6 +54,11 @@ public class EventController {
     @GetMapping("/events/{id}")
     public ResponseEntity<EventFullDto> find(@PathVariable long id, HttpServletRequest request) {
         log.info("Received GET-request at /events/{} endpoint", id);
+        addStat(request);
+        return ResponseEntity.ok().body(eventService.find(id));
+    }
+
+    private void addStat(HttpServletRequest request) {
         EndpointHitDto endpointHit = EndpointHitDto.builder()
                 .app("ewm-main-service")
                 .uri(request.getRequestURI())
@@ -67,7 +66,6 @@ public class EventController {
                 .timestamp(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
                 .build();
         hitClient.postHit(endpointHit);
-        return ResponseEntity.ok().body(eventService.find(id));
     }
 
     @GetMapping("/admin/events")
@@ -90,37 +88,37 @@ public class EventController {
 
     @PatchMapping("/admin/events/{eventId}")
     public ResponseEntity<EventFullDto> updateAdmin(@PathVariable long eventId,
-                                             @RequestBody UpdateEventAdminRequest updateEventAdminRequest) {
+                                                    @RequestBody UpdateEventAdminRequest updateEventAdminRequest) {
         log.info("Received PATCH-request at /admin/events/{} endpoint", eventId);
         return ResponseEntity.ok().body(eventService.updateAdmin(eventId, updateEventAdminRequest));
     }
 
     @GetMapping("/users/{userId}/events")
     public ResponseEntity<List<EventShortDto>> getUserEvents(@PathVariable Long userId,
-                                                          @RequestParam(defaultValue = "0") Integer from,
-                                                          @RequestParam(defaultValue = "10") Integer size) {
+                                                             @RequestParam(defaultValue = "0") Integer from,
+                                                             @RequestParam(defaultValue = "10") Integer size) {
         log.info("Received GET-request at /users/{}/events endpoint", userId);
         return ResponseEntity.ok().body(eventService.getUserEvents(userId, from, size));
     }
 
     @PostMapping("/users/{userId}/events")
     public ResponseEntity<EventFullDto> createUserEvents(@PathVariable Long userId,
-                                                             @RequestBody NewEventDto newEventDto) {
+                                                         @RequestBody NewEventDto newEventDto) {
         log.info("Received POST-request at /users/{}/events endpoint", userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(eventService.createUserEvents(userId, newEventDto));
     }
 
     @GetMapping("/users/{userId}/events/{eventId}")
     public ResponseEntity<EventFullDto> findUserEvent(@PathVariable Long userId,
-                                                             @PathVariable Long eventId) {
+                                                      @PathVariable Long eventId) {
         log.info("Received GET-request at /users/{}/events/{} endpoint", userId, eventId);
         return ResponseEntity.ok().body(eventService.findUserEvent(userId, eventId));
     }
 
     @PatchMapping("/users/{userId}/events/{eventId}")
     public ResponseEntity<EventFullDto> updateUserEvent(@PathVariable Long userId,
-                                                      @PathVariable Long eventId,
-                                                      @RequestBody UpdateEventUserRequest updateEventUserRequest) {
+                                                        @PathVariable Long eventId,
+                                                        @RequestBody UpdateEventUserRequest updateEventUserRequest) {
         log.info("Received PATCH-request at /users/{}/events/{} endpoint", userId, eventId);
         return ResponseEntity.ok().body(eventService.updateUserEvent(userId, eventId, updateEventUserRequest));
     }
