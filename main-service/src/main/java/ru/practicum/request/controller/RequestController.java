@@ -26,7 +26,7 @@ public class RequestController {
 
     @PostMapping
     public ResponseEntity<ParticipationRequestDto> createUserRequest(@PathVariable Long userId,
-                                                                           @RequestParam Long eventId) {
+                                                                     @RequestParam Long eventId) {
         log.info("Received POST-request at /users/{}/requests?eventId={} endpoint", userId, eventId);
         return ResponseEntity.status(HttpStatus.CREATED).body(requestService.createUserRequest(userId, eventId));
     }

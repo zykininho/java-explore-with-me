@@ -58,10 +58,10 @@ public class EventServiceImpl implements EventService {
         validateSearchParameters(from, size, sort);
         String sql = "SELECT * " +
                 "FROM public.events AS events" +
-                "LEFT JOIN (SELECT req.event AS event, COUNT(req.id) AS amount" +
+                "LEFT JOIN (SELECT req.event_id AS event, COUNT(req.id) AS amount" +
                 "FROM public.requests as req" +
-                "GROUP BY req.event" +
-                "WHERE req.status = 'CONFIRMED') AS requests ON (events.id = requests.event.id " +
+                "GROUP BY req.event_id" +
+                "WHERE req.status = 'CONFIRMED') AS requests ON (events.id = requests.event_id " +
                 "AND events.participant_limit >= requests.amount)" +
                 "WHERE state = 'PUBLISHED'";
         MapSqlParameterSource parameters = new MapSqlParameterSource();

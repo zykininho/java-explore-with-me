@@ -6,10 +6,10 @@ import java.util.List;
 
 public interface RequestService {
 
-    List<ParticipationRequestDto> getUserRequests(Long userId);
+    List<ParticipationRequestDto> getUserRequests(long userId);
 
-    ParticipationRequestDto createUserRequest(Long userId, Long eventId);
+    ParticipationRequestDto createUserRequest(long userId, long eventId);
 
-    ParticipationRequestDto cancelUserRequest(Long userId, Long requestId);
+    ParticipationRequestDto cancelUserRequest(long userId, long requestId);
 
 }

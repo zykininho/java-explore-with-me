@@ -4,6 +4,7 @@ import lombok.*;
 import ru.practicum.category.model.Category;
 import ru.practicum.compilation.model.Compilation;
 import ru.practicum.location.model.Location;
+import ru.practicum.request.model.Request;
 import ru.practicum.user.model.User;
 
 import javax.persistence.*;
@@ -68,6 +69,9 @@ public class Event {
     @JoinTable(name = "compilation_events", joinColumns = @JoinColumn(name = "event_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "compilation_id", referencedColumnName = "id"))
     private List<Compilation> compilations;
+
+    @OneToMany
+    private List<Request> requests;
 
     @Override
     public boolean equals(Object o) {
