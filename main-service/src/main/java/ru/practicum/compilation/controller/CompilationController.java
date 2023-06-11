@@ -31,7 +31,7 @@ public class CompilationController {
     @GetMapping("/compilations/{compId}")
     public ResponseEntity<CompilationDto> findCompilation(@PathVariable Long compId) {
         log.info("Received GET-request at /compilations/{} endpoint", compId);
-        return ResponseEntity.ok().body(compilationService.findCompilation(compId));
+        return ResponseEntity.ok().body(compilationService.searchCompilation(compId));
     }
 
     @PostMapping("/admin/compilations")
