@@ -102,10 +102,10 @@ public class EventController {
     }
 
     @PostMapping("/users/{userId}/events")
-    public ResponseEntity<EventFullDto> createUserEvents(@PathVariable Long userId,
+    public ResponseEntity<EventFullDto> createUserEvent(@PathVariable Long userId,
                                                          @RequestBody NewEventDto newEventDto) {
         log.info("Received POST-request at /users/{}/events endpoint", userId);
-        return ResponseEntity.status(HttpStatus.CREATED).body(eventService.createUserEvents(userId, newEventDto));
+        return ResponseEntity.status(HttpStatus.CREATED).body(eventService.createUserEvent(userId, newEventDto));
     }
 
     @GetMapping("/users/{userId}/events/{eventId}")

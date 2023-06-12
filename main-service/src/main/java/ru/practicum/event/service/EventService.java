@@ -30,18 +30,18 @@ public interface EventService {
                                    Integer from,
                                    Integer size);
 
-    EventFullDto updateAdmin(long eventId, UpdateEventAdminRequest updateEventAdminRequest);
+    EventFullDto updateAdmin(long eventId, UpdateEventAdminRequest updateRequest);
 
-    List<EventShortDto> getUserEvents(Long userId, Integer from, Integer size);
+    List<EventShortDto> getUserEvents(long userId, int from, int size);
 
-    EventFullDto createUserEvents(Long userId, NewEventDto newEventDto);
+    EventFullDto createUserEvent(long userId, NewEventDto newEventDto);
 
-    EventFullDto findUserEvent(Long userId, Long eventId);
+    EventFullDto findUserEvent(long userId, long eventId);
 
-    EventFullDto updateUserEvent(Long userId, Long eventId, UpdateEventUserRequest updateEventUserRequest);
+    EventFullDto updateUserEvent(long userId, long eventId, UpdateEventUserRequest updateRequest);
 
-    List<ParticipationRequestDto> findUserEventRequests(Long userId, Long eventId);
+    List<ParticipationRequestDto> findUserEventRequests(long userId, long eventId);
 
-    EventRequestStatusUpdateResult updateUserEventRequests(Long userId, Long eventId, EventRequestStatusUpdateRequest eventRequestStatusUpdateRequest);
+    EventRequestStatusUpdateResult updateUserEventRequests(long userId, long eventId, EventRequestStatusUpdateRequest updateRequest);
 
 }

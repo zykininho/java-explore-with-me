@@ -8,7 +8,7 @@ import ru.practicum.request.model.RequestStatus;
 @Builder
 public class EventRequestStatusUpdateRequest {
 
-    private Long[] requestIds;
+    private Long[] requestsId;
     private RequestStatus status;
 
 }

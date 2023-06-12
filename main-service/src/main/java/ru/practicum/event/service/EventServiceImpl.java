@@ -24,10 +24,14 @@ import ru.practicum.location.mapper.LocationMapper;
 import ru.practicum.request.dto.EventRequestStatusUpdateRequest;
 import ru.practicum.request.dto.EventRequestStatusUpdateResult;
 import ru.practicum.request.dto.ParticipationRequestDto;
+import ru.practicum.request.mapper.RequestMapper;
+import ru.practicum.request.model.Request;
 import ru.practicum.request.model.RequestStatus;
+import ru.practicum.request.repo.RequestRepository;
 import ru.practicum.stats.dto.ViewStatsDto;
 import ru.practicum.user.mapper.UserMapper;
 import ru.practicum.user.model.User;
+import ru.practicum.user.repo.UserRepository;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -47,6 +51,8 @@ public class EventServiceImpl implements EventService {
 
     private final EventRepository eventRepository;
     private final CategoryRepository categoryRepository;
+    private final UserRepository userRepository;
+    private final RequestRepository requestRepository;
     @Autowired
     private EventMapper eventMapper;
     @Autowired
@@ -55,6 +61,8 @@ public class EventServiceImpl implements EventService {
     private UserMapper userMapper;
     @Autowired
     private LocationMapper locationMapper;
+    @Autowired
+    private RequestMapper requestMapper;
     private final NamedParameterJdbcTemplate namedJdbcTemplate;
     private final StatClient statClient;
 
@@ -80,7 +88,7 @@ public class EventServiceImpl implements EventService {
         MapSqlParameterSource parameters = new MapSqlParameterSource();
         if (text != null && !text.isBlank()) {
             sql += " AND ((UPPER(events.annotation) LIKE UPPER(CONCAT('%', :text, '%')))" +
-                      "OR (UPPER(events.description) LIKE UPPER(CONCAT('%', :text, '%'))))";
+                    "OR (UPPER(events.description) LIKE UPPER(CONCAT('%', :text, '%'))))";
             parameters.addValue("text", text);
         }
         if (categories != null && !categories.isEmpty()) {
@@ -235,24 +243,18 @@ public class EventServiceImpl implements EventService {
         Event event = findEvent(eventId);
         String stateAction = updateRequest.getStateAction();
         if (stateAction != null) {
+            if (!event.getState().equals(EventState.PENDING)) {
+                log.info("Событие можно публиковать или отклонить, только если оно в состоянии ожидания публикации." +
+                                "Текущий статус события - {}",
+                        event.getState());
+                throw new ConflictException();
+            }
             switch (stateAction) {
                 case "PUBLISH_EVENT":
-                    if (!event.getState().equals(EventState.PENDING)) {
-                        log.info("Событие можно публиковать, только если оно в состоянии ожидания публикации." +
-                                        "Текущий статус события - {}",
-                                event.getState());
-                        throw new ConflictException();
-                    }
                     event.setState(EventState.PUBLISHED);
                     event.setPublishedDate(LocalDateTime.now());
                     break;
                 case "REJECT_EVENT":
-                    if (!event.getState().equals(EventState.PENDING)) {
-                        log.info("Событие можно отклонить, только если оно еще не опубликовано." +
-                                        "Текущий статус события - {}",
-                                event.getState());
-                        throw new ConflictException();
-                    }
                     event.setState(EventState.CANCELED);
                     break;
             }
@@ -312,39 +314,184 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public List<EventShortDto> getUserEvents(Long userId, Integer from, Integer size) {
-        // TODO: написать реализацию метода поиска событий пользователя
-        return null;
+    public List<EventShortDto> getUserEvents(long userId, int from, int size) {
+        User initiator = findUser(userId);
+        List<Event> userEvents = eventRepository.findAllByInitiator(initiator, PageRequest.of(from, size));
+        log.info("Найдены события {} пользователя {}", userEvents, initiator);
+        return userEvents.stream()
+                .map(eventMapper::toEventShortDto)
+                .collect(Collectors.toList());
+    }
+
+    private User findUser(long userId) {
+        if (userId == 0) {
+            throw new ValidationException();
+        }
+        Optional<User> user = userRepository.findById(userId);
+        if (user.isEmpty()) {
+            throw new NotFoundException();
+        }
+        return user.get();
     }
 
     @Override
-    public EventFullDto createUserEvents(Long userId, NewEventDto newEventDto) {
-        // TODO: написать реализацию метода создания события пользователя
-        return null;
+    public EventFullDto createUserEvent(long userId, NewEventDto newEventDto) {
+        User initiator = findUser(userId);
+        Event newEvent = eventMapper.toEvent(newEventDto);
+        newEvent.setInitiator(initiator);
+        newEvent.setState(EventState.PENDING);
+        LocalDateTime eventDate = newEvent.getEventDate();
+        if (eventDate != null) {
+            long diff = ChronoUnit.HOURS.between(eventDate, LocalDateTime.now());
+            if (diff <= 2) {
+                log.info("Дата и время {}, на которые намечено событие {}, не может быть раньше, чем через 2 часа от текущего момента",
+                        eventDate,
+                        newEvent);
+                throw new ConflictException();
+            }
+        }
+        Event savedEvent = eventRepository.save(newEvent);
+        log.info("Добавлено новое событие {} от пользователя {}", savedEvent, initiator);
+        return eventMapper.toEventFullDto(savedEvent);
     }
 
     @Override
-    public EventFullDto findUserEvent(Long userId, Long eventId) {
-        // TODO: написать реализацию метода поиска события пользователя
-        return null;
+    public EventFullDto findUserEvent(long userId, long eventId) {
+        User initiator = findUser(userId);
+        Event foundEvent = findEvent(eventId, initiator);
+        log.info("Найдено событие {} от пользователя {}", foundEvent, initiator);
+        return eventMapper.toEventFullDto(foundEvent);
+    }
+
+    private Event findEvent(long eventId, User initiator) {
+        if (eventId == 0) {
+            throw new ValidationException();
+        }
+        Optional<Event> event = eventRepository.findByIdAndInitiator(eventId, initiator);
+        if (event.isEmpty()) {
+            throw new NotFoundException();
+        }
+        return event.get();
     }
 
     @Override
-    public EventFullDto updateUserEvent(Long userId, Long eventId, UpdateEventUserRequest updateEventUserRequest) {
-        // TODO: написать реализацию метода обновления события пользователя
-        return null;
+    public EventFullDto updateUserEvent(long userId, long eventId, UpdateEventUserRequest updateRequest) {
+        User initiator = findUser(userId);
+        Event event = findEvent(eventId, initiator);
+        if (updateRequest.getAnnotation() != null) {
+            event.setAnnotation(updateRequest.getAnnotation());
+        }
+        if (updateRequest.getCategory() != null) {
+            event.setCategory(findCategory(updateRequest.getCategory()));
+        }
+        if (updateRequest.getDescription() != null) {
+            event.setDescription(updateRequest.getDescription());
+        }
+        LocalDateTime newEventDate = updateRequest.getEventDate();
+        if (newEventDate != null && event.getState().equals(EventState.PUBLISHED)) {
+            long diff = ChronoUnit.HOURS.between(newEventDate, LocalDateTime.now());
+            if (diff <= 2) {
+                log.info("дата и время {}, на которые намечено событие, не может быть раньше, чем через два часа от текущего момента {}",
+                        newEventDate,
+                        LocalDateTime.now());
+                throw new ConflictException();
+            }
+        }
+        if (newEventDate != null) {
+            event.setEventDate(newEventDate);
+        }
+        if (updateRequest.getLocation() != null) {
+            event.setLocation(locationMapper.toLocation(updateRequest.getLocation()));
+        }
+        if (updateRequest.getPaid() != null) {
+            event.setPaid(updateRequest.getPaid());
+        }
+        if (updateRequest.getParticipantLimit() != null) {
+            event.setParticipantLimit(event.getParticipantLimit());
+        }
+        if (updateRequest.getRequestModeration() != null) {
+            event.setRequestModeration(updateRequest.getRequestModeration());
+        }
+        if (updateRequest.getTitle() != null) {
+            event.setTitle(updateRequest.getTitle());
+        }
+        String stateAction = updateRequest.getStateAction();
+        if (stateAction != null) {
+            if (event.getState().equals(EventState.PUBLISHED)) {
+                log.info("Изменить можно только отмененные события или события в состоянии ожидания модерации." +
+                                "Текущий статус - {}",
+                        event.getState());
+                throw new ConflictException();
+            }
+            switch (stateAction) {
+                case "SEND_TO_REVIEW":
+                    event.setState(EventState.PENDING);
+                    break;
+                case "CANCEL_REVIEW":
+                    event.setState(EventState.CANCELED);
+                    break;
+            }
+        }
+        Event updatedEvent = eventRepository.save(event);
+        log.info("Обновлено событие {} на основании запроса пользователя {}", updatedEvent, updateRequest);
+        return eventMapper.toEventFullDto(updatedEvent);
     }
 
     @Override
-    public List<ParticipationRequestDto> findUserEventRequests(Long userId, Long eventId) {
-        // TODO: написать реализацию метода поиска запросов на участие в событии пользователя
-        return null;
+    public List<ParticipationRequestDto> findUserEventRequests(long userId, long eventId) {
+        User initiator = findUser(userId);
+        Event event = findEvent(eventId, initiator);
+        List<Request> requests = requestRepository.findAllByEvent(event);
+        log.info("Найдены запросы {} на участие в событии {} пользователя {}", requests, event, initiator);
+        return requests.stream()
+                .map(requestMapper::toParticipationRequestDto)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public EventRequestStatusUpdateResult updateUserEventRequests(Long userId, Long eventId, EventRequestStatusUpdateRequest eventRequestStatusUpdateRequest) {
-        // TODO: написать реализацию метода обновления запросов на участие в событии пользователя
-        return null;
+    public EventRequestStatusUpdateResult updateUserEventRequests(long userId, long eventId, EventRequestStatusUpdateRequest updateRequest) {
+        User initiator = findUser(userId);
+        Event event = findEvent(eventId, initiator);
+        RequestStatus updateStatus = updateRequest.getStatus();
+        if (Boolean.FALSE.equals(event.getRequestModeration()) && updateStatus.equals(RequestStatus.CONFIRMED)) {
+            return EventRequestStatusUpdateResult.builder().build();
+        }
+        if (getNumberConfirmedRequests(event) == event.getParticipantLimit()) {
+            log.info("Нельзя подтвердить заявки, если уже достигнут лимит по заявкам на событие {}", event);
+            throw new ConflictException();
+        }
+        Long[] requestsIdForUpdate = updateRequest.getRequestsId();
+        List<Request> requests = requestRepository.findAllByIdAndEvent(requestsIdForUpdate, event);
+        List<ParticipationRequestDto> confirmedRequests = new ArrayList<>();
+        List<ParticipationRequestDto> rejectedRequests = new ArrayList<>();
+        boolean isLimitReached = false;
+        for (Request request : requests) {
+            if (!request.getStatus().equals(RequestStatus.PENDING)) {
+                log.info("Статус можно изменить только у заявки, находящейся в состоянии ожидания." +
+                        "Текущий статус - {}", request.getStatus());
+                throw new ConflictException();
+            }
+            if (isLimitReached) {
+                updateStatus = RequestStatus.REJECTED;
+            }
+            request.setStatus(updateStatus);
+            ParticipationRequestDto participationRequestDto = requestMapper.toParticipationRequestDto(request);
+            if (updateStatus.equals(RequestStatus.CONFIRMED)) {
+                confirmedRequests.add(participationRequestDto);
+                log.info("Заявка {} на участие в событии {} подтверждена", request, event);
+            } else if (updateStatus.equals(RequestStatus.REJECTED)) {
+                rejectedRequests.add(participationRequestDto);
+                log.info("Заявка {} на участие в событии {} отменена", request, event);
+            }
+            if (!isLimitReached && (getNumberConfirmedRequests(event) == event.getParticipantLimit())) {
+                isLimitReached = true;
+                log.info("Достигнут лимит заявок по участию в событии {}", event);
+            }
+        }
+        return EventRequestStatusUpdateResult.builder()
+                .confirmedRequests(confirmedRequests)
+                .rejectedRequests(rejectedRequests)
+                .build();
     }
 
 }

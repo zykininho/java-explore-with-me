@@ -11,13 +11,13 @@ import java.time.LocalDateTime;
 public class UpdateEventUserRequest {
 
     private String annotation;
-    private long category;
+    private Long category;
     private String description;
     private LocalDateTime eventDate;
     private LocationDto location;
-    private boolean paid;
-    private int participantLimit;
-    private boolean requestModeration;
+    private Boolean paid;
+    private Integer participantLimit;
+    private Boolean requestModeration;
     private String stateAction;
     private String title;
 
