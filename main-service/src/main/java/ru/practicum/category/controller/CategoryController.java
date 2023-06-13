@@ -26,14 +26,14 @@ public class CategoryController {
     }
 
     @PatchMapping("/admin/categories/{id}")
-    public ResponseEntity<CategoryDto> update(@PathVariable("id") long catId,
+    public ResponseEntity<CategoryDto> update(@PathVariable("id") Long catId,
                                               @RequestBody NewCategoryDto newCategoryDto) {
         log.info("Received PATCH-request at /admin/categories/{} endpoint with body {}", catId, newCategoryDto);
         return ResponseEntity.ok().body(categoryService.update(catId, newCategoryDto));
     }
 
     @DeleteMapping("/admin/categories/{id}")
-    public ResponseEntity<CategoryDto> delete(@PathVariable("id") long catId) {
+    public ResponseEntity<CategoryDto> delete(@PathVariable("id") Long catId) {
         log.info("Received DELETE-request at /admin/categories/{} endpoint", catId);
         categoryService.delete(catId);
         return ResponseEntity.noContent().build();
@@ -47,7 +47,7 @@ public class CategoryController {
     }
 
     @GetMapping("/categories/{id}")
-    public ResponseEntity<CategoryDto> find(@PathVariable("id") long catId) {
+    public ResponseEntity<CategoryDto> find(@PathVariable("id") Long catId) {
         log.info("Received GET-request at /categories/{} endpoint", catId);
         return ResponseEntity.ok().body(categoryService.find(catId));
     }

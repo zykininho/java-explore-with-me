@@ -53,7 +53,7 @@ public class EventController {
     }
 
     @GetMapping("/events/{id}")
-    public ResponseEntity<EventFullDto> find(@PathVariable long id, HttpServletRequest request) {
+    public ResponseEntity<EventFullDto> find(@PathVariable Long id, HttpServletRequest request) {
         log.info("Received GET-request at /events/{} endpoint", id);
         addStat(request);
         return ResponseEntity.ok().body(eventService.find(id));
@@ -91,7 +91,7 @@ public class EventController {
     }
 
     @PatchMapping("/admin/events/{eventId}")
-    public ResponseEntity<EventFullDto> updateAdmin(@PathVariable long eventId,
+    public ResponseEntity<EventFullDto> updateAdmin(@PathVariable Long eventId,
                                                     @RequestBody UpdateEventAdminRequest updateRequest) {
         log.info("Received PATCH-request at /admin/events/{} endpoint with body {}", eventId, updateRequest);
         return ResponseEntity.ok().body(eventService.updateAdmin(eventId, updateRequest));
