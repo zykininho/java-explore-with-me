@@ -2,6 +2,7 @@ package ru.practicum.event.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,10 +30,10 @@ public class EventController {
 
     @GetMapping("/events")
     public ResponseEntity<List<EventShortDto>> getAll(@RequestParam(required = false) String text,
-                                                      @RequestParam(required = false) List<Integer> categories,
+                                                      @RequestParam(required = false) List<Long> categories,
                                                       @RequestParam(required = false) Boolean paid,
-                                                      @RequestParam(required = false) LocalDateTime rangeStart,
-                                                      @RequestParam(required = false) LocalDateTime rangeEnd,
+                                                      @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeStart,
+                                                      @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeEnd,
                                                       @RequestParam(required = false) Boolean onlyAvailable,
                                                       @RequestParam(required = false) String sort,
                                                       @RequestParam(defaultValue = "0") Integer from,
@@ -65,18 +66,21 @@ public class EventController {
                 .ip(request.getRemoteAddr())
                 .timestamp(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
                 .build();
-        hitClient.postHit(endpointHit);
+        ResponseEntity<Object> response = hitClient.postHit(endpointHit);
+        log.info("Добавлена статистика {}", response);
     }
 
     @GetMapping("/admin/events")
-    public ResponseEntity<List<EventFullDto>> getAdminAll(@RequestParam(required = false) List<Integer> users,
+    public ResponseEntity<List<EventFullDto>> getAdminAll(@RequestParam(required = false) List<Long> users,
                                                       @RequestParam(required = false) List<String> states,
-                                                      @RequestParam(required = false) List<Integer> categories,
-                                                      @RequestParam(required = false) LocalDateTime rangeStart,
-                                                      @RequestParam(required = false) LocalDateTime rangeEnd,
+                                                      @RequestParam(required = false) List<Long> categories,
+                                                      @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeStart,
+                                                      @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeEnd,
                                                       @RequestParam(defaultValue = "0") Integer from,
                                                       @RequestParam(defaultValue = "10") Integer size) {
-        log.info("Received GET-request at /admin/events endpoint");
+        log.info("Received GET-request at /admin/events endpoint with parameters " +
+                "users={}, states={}, categories={}, rangeStart={}, rangeEnd={}, from={}, size={}",
+                users, states, categories, rangeStart, rangeEnd, from, size);
         return ResponseEntity.ok().body(eventService.getAdminAll(users,
                 states,
                 categories,
@@ -88,9 +92,9 @@ public class EventController {
 
     @PatchMapping("/admin/events/{eventId}")
     public ResponseEntity<EventFullDto> updateAdmin(@PathVariable long eventId,
-                                                    @RequestBody UpdateEventAdminRequest updateEventAdminRequest) {
-        log.info("Received PATCH-request at /admin/events/{} endpoint", eventId);
-        return ResponseEntity.ok().body(eventService.updateAdmin(eventId, updateEventAdminRequest));
+                                                    @RequestBody UpdateEventAdminRequest updateRequest) {
+        log.info("Received PATCH-request at /admin/events/{} endpoint with body {}", eventId, updateRequest);
+        return ResponseEntity.ok().body(eventService.updateAdmin(eventId, updateRequest));
     }
 
     @GetMapping("/users/{userId}/events")
@@ -103,8 +107,8 @@ public class EventController {
 
     @PostMapping("/users/{userId}/events")
     public ResponseEntity<EventFullDto> createUserEvent(@PathVariable Long userId,
-                                                         @RequestBody NewEventDto newEventDto) {
-        log.info("Received POST-request at /users/{}/events endpoint", userId);
+                                                        @RequestBody(required = false) NewEventDto newEventDto) {
+        log.info("Received POST-request at /users/{}/events endpoint with body={}", userId, newEventDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(eventService.createUserEvent(userId, newEventDto));
     }
 
@@ -118,7 +122,7 @@ public class EventController {
     @PatchMapping("/users/{userId}/events/{eventId}")
     public ResponseEntity<EventFullDto> updateUserEvent(@PathVariable Long userId,
                                                         @PathVariable Long eventId,
-                                                        @RequestBody UpdateEventUserRequest updateEventUserRequest) {
+                                                        @RequestBody(required = false) UpdateEventUserRequest updateEventUserRequest) {
         log.info("Received PATCH-request at /users/{}/events/{} endpoint", userId, eventId);
         return ResponseEntity.ok().body(eventService.updateUserEvent(userId, eventId, updateEventUserRequest));
     }
@@ -133,9 +137,9 @@ public class EventController {
     @PatchMapping("/users/{userId}/events/{eventId}/requests")
     public ResponseEntity<EventRequestStatusUpdateResult> updateUserEventRequests(@PathVariable Long userId,
                                                                                   @PathVariable Long eventId,
-                                                                                  @RequestBody EventRequestStatusUpdateRequest eventRequestStatusUpdateRequest) {
-        log.info("Received PATCH-request at /users/{}/events/{}/requests endpoint", userId, eventId);
-        return ResponseEntity.ok().body(eventService.updateUserEventRequests(userId, eventId, eventRequestStatusUpdateRequest));
+                                                                                  @RequestBody EventRequestStatusUpdateRequest updateRequest) {
+        log.info("Received PATCH-request at /users/{}/events/{}/requests endpoint with body {}", userId, eventId, updateRequest);
+        return ResponseEntity.ok().body(eventService.updateUserEventRequests(userId, eventId, updateRequest));
     }
 
 }

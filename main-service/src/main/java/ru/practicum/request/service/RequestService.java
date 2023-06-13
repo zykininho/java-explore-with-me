@@ -8,7 +8,7 @@ public interface RequestService {
 
     List<ParticipationRequestDto> getUserRequests(long userId);
 
-    ParticipationRequestDto createUserRequest(long userId, long eventId);
+    ParticipationRequestDto createUserRequest(long userId, Long eventId);
 
     ParticipationRequestDto cancelUserRequest(long userId, long requestId);
 

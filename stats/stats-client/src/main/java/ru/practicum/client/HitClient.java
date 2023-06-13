@@ -12,7 +12,7 @@ import org.springframework.web.util.DefaultUriBuilderFactory;
 @Service
 public class HitClient extends BaseClient {
 
-    private static final String API_HIT_PREFIX = "/ru/practicum/hit";
+    private static final String API_HIT_PREFIX = "/hit";
 
     @Autowired
     public HitClient(@Value("${ewm-stats.url}") String serverUrl, RestTemplateBuilder builder) {

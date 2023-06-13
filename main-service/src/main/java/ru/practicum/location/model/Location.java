@@ -20,10 +20,10 @@ public class Location {
     private Long id;
 
     @Column(nullable = false)
-    private float latitude;
+    private float lat;
 
     @Column(nullable = false)
-    private float longitude;
+    private float lon;
 
     @Override
     public boolean equals(Object o) {

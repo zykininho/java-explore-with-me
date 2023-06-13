@@ -4,8 +4,6 @@ import lombok.Builder;
 import lombok.Data;
 import ru.practicum.location.dto.LocationDto;
 
-import java.time.LocalDateTime;
-
 @Data
 @Builder
 public class UpdateEventUserRequest {
@@ -13,7 +11,7 @@ public class UpdateEventUserRequest {
     private String annotation;
     private Long category;
     private String description;
-    private LocalDateTime eventDate;
+    private String eventDate;
     private LocationDto location;
     private Boolean paid;
     private Integer participantLimit;

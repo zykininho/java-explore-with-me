@@ -1,6 +1,8 @@
 package ru.practicum.request.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
+import org.springframework.format.annotation.DateTimeFormat;
 import ru.practicum.event.model.Event;
 import ru.practicum.user.model.User;
 
@@ -30,6 +32,8 @@ public class Request {
     @ToString.Exclude
     private User requester;
 
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Column(name = "creation_date")
     private LocalDateTime creationDate;
 

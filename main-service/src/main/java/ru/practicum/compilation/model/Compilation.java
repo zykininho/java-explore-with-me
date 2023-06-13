@@ -27,7 +27,9 @@ public class Compilation {
     @Column
     private Boolean pinned;
 
-    @ManyToMany(fetch = FetchType.EAGER, mappedBy = "compilations")
+    @ManyToMany
+    @JoinTable(name = "compilation_events", joinColumns = @JoinColumn(name = "compilation_id", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "event_id", referencedColumnName = "id"))
     private List<Event> events;
 
 }

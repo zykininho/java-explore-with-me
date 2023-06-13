@@ -13,22 +13,22 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping("/admin/categories")
+@RequestMapping
 @RequiredArgsConstructor
 public class CategoryController {
 
     private final CategoryService categoryService;
 
     @PostMapping("/admin/categories")
-    public ResponseEntity<CategoryDto> create(@RequestBody NewCategoryDto newCategoryDto) {
-        log.info("Received POST-request at /admin/categories endpoint");
+    public ResponseEntity<CategoryDto> create(@RequestBody(required = false) NewCategoryDto newCategoryDto) {
+        log.info("Received POST-request at /admin/categories endpoint with body={}", newCategoryDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(categoryService.create(newCategoryDto));
     }
 
     @PatchMapping("/admin/categories/{id}")
     public ResponseEntity<CategoryDto> update(@PathVariable("id") long catId,
                                               @RequestBody NewCategoryDto newCategoryDto) {
-        log.info("Received PATCH-request at /admin/categories/{} endpoint", catId);
+        log.info("Received PATCH-request at /admin/categories/{} endpoint with body {}", catId, newCategoryDto);
         return ResponseEntity.ok().body(categoryService.update(catId, newCategoryDto));
     }
 

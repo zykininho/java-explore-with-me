@@ -20,7 +20,7 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping
-    public ResponseEntity<List<UserDto>> getAll(@RequestParam(required = false) Long[] ids,
+    public ResponseEntity<List<UserDto>> getAll(@RequestParam(required = false) List<Long> ids,
                                                 @RequestParam(defaultValue = "0") Integer from,
                                                 @RequestParam(defaultValue = "10") Integer size) {
         log.info("Received GET-request at /admin/users endpoint");
@@ -29,7 +29,7 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<UserDto> create(@RequestBody NewUserRequest newUserRequest) {
-        log.info("Received POST-request at /admin/users endpoint");
+        log.info("Received POST-request at /admin/users endpoint with body {}", newUserRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.create(newUserRequest));
     }
 

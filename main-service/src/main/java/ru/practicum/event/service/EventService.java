@@ -11,7 +11,7 @@ import java.util.List;
 public interface EventService {
 
     List<EventShortDto> getAll(String text,
-                               List<Integer> categories,
+                               List<Long> categories,
                                Boolean paid,
                                LocalDateTime rangeStart,
                                LocalDateTime rangeEnd,
@@ -22,13 +22,13 @@ public interface EventService {
 
     EventFullDto find(long id);
 
-    List<EventFullDto> getAdminAll(List<Integer> users,
+    List<EventFullDto> getAdminAll(List<Long> users,
                                    List<String> states,
-                                   List<Integer> categories,
+                                   List<Long> categories,
                                    LocalDateTime rangeStart,
                                    LocalDateTime rangeEnd,
-                                   Integer from,
-                                   Integer size);
+                                   int from,
+                                   int size);
 
     EventFullDto updateAdmin(long eventId, UpdateEventAdminRequest updateRequest);
 

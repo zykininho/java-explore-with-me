@@ -61,7 +61,11 @@ public class RequestServiceImpl implements RequestService {
     }
 
     @Override
-    public ParticipationRequestDto createUserRequest(long userId, long eventId) {
+    public ParticipationRequestDto createUserRequest(long userId, Long eventId) {
+        if (eventId == null) {
+            log.info("Не указан обязательный параметр запроса eventId");
+            throw new ValidationException();
+        }
         User requester = findUser(userId);
         Event event = findEvent(eventId);
         List<Request> userEventRequests = requestRepository.findAllByEventAndRequester(event, requester);
@@ -87,8 +91,11 @@ public class RequestServiceImpl implements RequestService {
                 .requester(requester)
                 .creationDate(LocalDateTime.now())
                 .build();
+        if (event.getParticipantLimit() == 0) {
+            newRequest.setStatus(RequestStatus.CONFIRMED);
+        }
         Request savedRequest = requestRepository.save(newRequest);
-        log.info("В базе сохранено новое событие {}", savedRequest);
+        log.info("В базе сохранен новый запрос на участие в событии {}", savedRequest);
         return requestMapper.toParticipationRequestDto(savedRequest);
     }
 
@@ -107,14 +114,14 @@ public class RequestServiceImpl implements RequestService {
         long numberConfirmedRequests = event.getRequests().stream()
                 .filter(request -> request.getStatus().equals(RequestStatus.CONFIRMED))
                 .count();
-        return numberConfirmedRequests >= event.getParticipantLimit();
+        return numberConfirmedRequests != 0 && numberConfirmedRequests >= event.getParticipantLimit();
     }
 
     @Override
     public ParticipationRequestDto cancelUserRequest(long userId, long requestId) {
         User requester = findUser(userId);
         Request request = findRequest(requestId, requester);
-        request.setStatus(RequestStatus.REJECTED);
+        request.setStatus(RequestStatus.CANCELED);
         Request cancelledRequest = requestRepository.save(request);
         log.info("В базе отменено событие {} пользователем {}", cancelledRequest, requester);
         return requestMapper.toParticipationRequestDto(cancelledRequest);

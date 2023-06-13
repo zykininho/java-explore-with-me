@@ -38,7 +38,7 @@ services:
       - ewm-db
       - stats-server
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://ewm-db:5433/ewm-db
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://ewm-db:5432/ewm-db
       - POSTGRES_USERNAME=ewm_main_user
       - POSTGRES_PASSWORD=ewm_main_password
       - TZ=GMT
@@ -49,7 +49,7 @@ services:
     image: postgres:14-alpine
     container_name: explore-with-me-ewm-db-container
     ports:
-      - "6542:5433"
+      - "6542:5432"
     volumes:
       - /var/lib/postgresql/data/
     environment:

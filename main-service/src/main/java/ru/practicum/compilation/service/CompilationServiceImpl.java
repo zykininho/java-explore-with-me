@@ -65,10 +65,25 @@ public class CompilationServiceImpl implements CompilationService {
 
     @Override
     public CompilationDto createCompilation(NewCompilationDto newCompilationDto) {
+        validateNewCompilation(newCompilationDto);
         Compilation compilation = compilationMapper.toCompilation(newCompilationDto);
         Compilation savedCompilation = compilationRepository.save(compilation);
         log.info("Добавлена новая подборка событий {}", savedCompilation);
         return compilationMapper.toCompilationDto(savedCompilation);
+    }
+
+    private void validateNewCompilation(NewCompilationDto newCompilationDto) {
+        if (newCompilationDto.getPinned() == null) {
+            newCompilationDto.setPinned(false);
+        }
+        if (newCompilationDto.getTitle() == null || newCompilationDto.getTitle().isBlank()) {
+            log.info("В новой подборке не указан заголовок или он пустой");
+            throw new ValidationException();
+        }
+        if (newCompilationDto.getTitle().length() > 50) {
+            log.info("В новой подборке заголовок имеет длину больше 50 символов");
+            throw new ValidationException();
+        }
     }
 
     @Override
@@ -79,15 +94,19 @@ public class CompilationServiceImpl implements CompilationService {
     }
 
     @Override
-    public CompilationDto updateCompilation(long compId, UpdateCompilationRequest updateCompilationRequest) {
+    public CompilationDto updateCompilation(long compId, UpdateCompilationRequest updateRequest) {
         Compilation foundCompilation = findCompilation(compId);
-        if (updateCompilationRequest.getPinned() != null) {
-            foundCompilation.setPinned(updateCompilationRequest.getPinned());
+        if (updateRequest.getPinned() != null) {
+            foundCompilation.setPinned(updateRequest.getPinned());
         }
-        if (updateCompilationRequest.getTitle() != null) {
-            foundCompilation.setTitle(updateCompilationRequest.getTitle());
+        if (updateRequest.getTitle() != null) {
+            if (updateRequest.getTitle().length() > 50) {
+                log.info("В запросе на обновление подборки событий длина заголовка больше 50 символов");
+                throw new ValidationException();
+            }
+            foundCompilation.setTitle(updateRequest.getTitle());
         }
-        List<Long> eventsId = updateCompilationRequest.getEvents();
+        List<Long> eventsId = updateRequest.getEvents();
         if (eventsId != null) {
             List<Event> events = new ArrayList<>();
             for (Long eventId : eventsId) {

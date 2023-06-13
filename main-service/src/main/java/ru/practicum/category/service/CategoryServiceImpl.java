@@ -10,6 +10,9 @@ import ru.practicum.category.dto.NewCategoryDto;
 import ru.practicum.category.mapper.CategoryMapper;
 import ru.practicum.category.model.Category;
 import ru.practicum.category.repo.CategoryRepository;
+import ru.practicum.event.model.Event;
+import ru.practicum.event.repo.EventRepository;
+import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundException;
 import ru.practicum.exception.ValidationException;
 
@@ -23,13 +26,19 @@ import java.util.stream.Collectors;
 public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;
+    private final EventRepository eventRepository;
     @Autowired
     private CategoryMapper categoryMapper;
 
     @Override
     public CategoryDto create(NewCategoryDto newCategoryDto) {
+        if (newCategoryDto == null) {
+            log.info("Не указаны поля для новой категории. Передано пустое тело запроса");
+            throw new ValidationException();
+        }
         Category category = categoryMapper.toCategory(newCategoryDto);
         validate(category);
+        findCategoryByName(newCategoryDto.getName());
         Category savedCategory = categoryRepository.save(category);
         log.info("Добавлена новая категория: {}", savedCategory);
         return categoryMapper.toCategoryDto(savedCategory);
@@ -51,7 +60,9 @@ public class CategoryServiceImpl implements CategoryService {
     public CategoryDto update(long catId, NewCategoryDto newCategoryDto) {
         Category category = findCategory(catId);
         validateToUpdate(newCategoryDto);
-        category.setName(newCategoryDto.getName());
+        String newCategoryName = newCategoryDto.getName();
+        findCategoryByName(catId, newCategoryName);
+        category.setName(newCategoryName);
         Category savedCategory = categoryRepository.save(category);
         log.info("Изменена категория {}", savedCategory);
         return categoryMapper.toCategoryDto(savedCategory);
@@ -63,9 +74,26 @@ public class CategoryServiceImpl implements CategoryService {
         }
         Optional<Category> category = categoryRepository.findById(catId);
         if (category.isEmpty()) {
+            log.info("Не найдена категория с идентификатором {}", catId);
             throw new NotFoundException();
         }
         return category.get();
+    }
+
+    private void findCategoryByName(Long id, String name) {
+        Optional<Category> category = categoryRepository.findByNameAndIdIsNot(name, id);
+        if (category.isPresent()) {
+            log.info("В базе уже сохранена категория с именем {}", name);
+            throw new ConflictException();
+        }
+    }
+
+    private void findCategoryByName(String name) {
+        Optional<Category> category = categoryRepository.findByName(name);
+        if (category.isPresent()) {
+            log.info("В базе уже сохранена категория с именем {}", name);
+            throw new ConflictException();
+        }
     }
 
     private void validateToUpdate(NewCategoryDto newCategoryDto) {
@@ -83,8 +111,17 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public void delete(long catId) {
         Category category = findCategory(catId);
+        findEventsByCategory(category);
         categoryRepository.delete(category);
         log.info("Удалена категория {}", category);
+    }
+
+    private void findEventsByCategory(Category category) {
+        List<Event> events = eventRepository.findAllByCategory(category);
+        if (!events.isEmpty()) {
+            log.info("На категорию {} есть ссылки в событиях {}", category, events);
+            throw new ConflictException();
+        }
     }
 
     @Override

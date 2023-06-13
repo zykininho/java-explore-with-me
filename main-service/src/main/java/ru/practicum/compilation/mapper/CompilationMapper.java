@@ -22,11 +22,13 @@ public interface CompilationMapper {
 
     default List<Event> mapIdToEvent(List<Long> eventsId) {
         List<Event> events = new ArrayList<>();
-        for (Long eventId : eventsId) {
-            Event event = Event.builder()
-                            .id(eventId)
-                            .build();
-            events.add(event);
+        if (eventsId != null) {
+            for (Long eventId : eventsId) {
+                Event event = Event.builder()
+                        .id(eventId)
+                        .build();
+                events.add(event);
+            }
         }
         return events;
     }

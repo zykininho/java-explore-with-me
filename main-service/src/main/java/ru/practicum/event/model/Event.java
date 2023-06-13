@@ -1,6 +1,8 @@
 package ru.practicum.event.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
+import org.springframework.format.annotation.DateTimeFormat;
 import ru.practicum.category.model.Category;
 import ru.practicum.compilation.model.Compilation;
 import ru.practicum.location.model.Location;
@@ -32,10 +34,12 @@ public class Event {
     @Column
     private String description;
 
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Column(name = "event_date")
     private LocalDateTime eventDate;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @ToString.Exclude
     private Location location;
 
@@ -56,21 +60,23 @@ public class Event {
     @ToString.Exclude
     private User initiator;
 
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Column(name = "creation_date")
     private LocalDateTime creationDate;
 
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Column(name = "published_date")
     private LocalDateTime publishedDate;
 
     @Enumerated(EnumType.STRING)
     private EventState state;
 
-    @ManyToMany
-    @JoinTable(name = "compilation_events", joinColumns = @JoinColumn(name = "event_id", referencedColumnName = "id"),
-            inverseJoinColumns = @JoinColumn(name = "compilation_id", referencedColumnName = "id"))
+    @ManyToMany(fetch = FetchType.EAGER, mappedBy = "events")
     private List<Compilation> compilations;
 
-    @OneToMany
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL)
     private List<Request> requests;
 
     @Override

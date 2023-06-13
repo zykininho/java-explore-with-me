@@ -2,23 +2,20 @@ package ru.practicum.event.dto;
 
 import lombok.Builder;
 import lombok.Data;
-import ru.practicum.category.dto.CategoryDto;
 import ru.practicum.location.dto.LocationDto;
-
-import java.time.LocalDateTime;
 
 @Data
 @Builder
 public class NewEventDto {
 
     private String annotation;
-    private CategoryDto category;
+    private Long category;
     private String description;
-    private LocalDateTime eventDate;
+    private String eventDate;
     private LocationDto location;
-    private boolean paid;
-    private int participantLimit;
-    private boolean requestModeration;
+    private Boolean paid;
+    private Integer participantLimit;
+    private Boolean requestModeration;
     private String title;
 
 }
