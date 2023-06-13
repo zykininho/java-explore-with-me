@@ -2,7 +2,6 @@ package ru.practicum.request.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.practicum.event.model.Event;
 import ru.practicum.event.model.EventState;
@@ -32,8 +31,7 @@ public class RequestServiceImpl implements RequestService {
     private final RequestRepository requestRepository;
     private final UserRepository userRepository;
     private final EventRepository eventRepository;
-    @Autowired
-    private RequestMapper requestMapper;
+    private final RequestMapper requestMapper;
 
     @Override
     public List<ParticipationRequestDto> getUserRequests(long userId) {

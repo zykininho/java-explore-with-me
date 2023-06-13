@@ -2,7 +2,6 @@ package ru.practicum.event.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -49,16 +48,11 @@ public class EventServiceImpl implements EventService {
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
     private final RequestRepository requestRepository;
-    @Autowired
-    private EventMapper eventMapper;
-    @Autowired
-    private CategoryMapper categoryMapper;
-    @Autowired
-    private UserMapper userMapper;
-    @Autowired
-    private LocationMapper locationMapper;
-    @Autowired
-    private RequestMapper requestMapper;
+    private final EventMapper eventMapper;
+    private final CategoryMapper categoryMapper;
+    private final UserMapper userMapper;
+    private final LocationMapper locationMapper;
+    private final RequestMapper requestMapper;
     private final NamedParameterJdbcTemplate namedJdbcTemplate;
     private final StatClient statClient;
 

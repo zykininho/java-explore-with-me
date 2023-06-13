@@ -2,7 +2,6 @@ package ru.practicum.compilation.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import ru.practicum.compilation.dto.CompilationDto;
@@ -27,8 +26,7 @@ import java.util.stream.Collectors;
 public class CompilationServiceImpl implements CompilationService {
 
     private final CompilationRepository compilationRepository;
-    @Autowired
-    private CompilationMapper compilationMapper;
+    private final CompilationMapper compilationMapper;
     private final EventRepository eventRepository;
 
     @Override

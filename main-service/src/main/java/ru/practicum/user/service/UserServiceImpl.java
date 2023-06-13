@@ -2,7 +2,6 @@ package ru.practicum.user.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -25,8 +24,7 @@ import java.util.stream.Collectors;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
-    @Autowired
-    private UserMapper userMapper;
+    private final UserMapper userMapper;
 
     public List<UserDto> getAll(List<Long> ids, Integer from, Integer size) {
         List<User> users;
