@@ -8,13 +8,12 @@ import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 
-import java.time.LocalDateTime;
 import java.util.Map;
 
 @Service
 public class StatClient extends BaseClient {
 
-    private static final String API_STATS_PREFIX = "/ru/practicum/stats";
+    private static final String API_STATS_PREFIX = "/stats";
 
     @Autowired
     public StatClient(@Value("${ewm-stats.url}") String serverUrl, RestTemplateBuilder builder) {
@@ -26,7 +25,7 @@ public class StatClient extends BaseClient {
         );
     }
 
-    public ResponseEntity<Object> getStats(LocalDateTime start, LocalDateTime end, String[] uris, Boolean unique) {
+    public ResponseEntity<Object> getStats(String start, String end, String[] uris, Boolean unique) {
         Map<String, Object> parameters = Map.of(
                 "start", start,
                 "end", end,

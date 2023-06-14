@@ -10,11 +10,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.practicum.stats.dto.ViewStatsDto;
+import ru.practicum.exception.ValidationException;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Slf4j
@@ -35,26 +35,40 @@ public class HitServiceImpl implements HitService {
     }
 
     @Override
-    public List<ViewStatsDto> getStats(String start, String end, List<String> uris, String unique) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        LocalDateTime startDate = LocalDateTime.parse(start, formatter);
-        LocalDateTime endDate = LocalDateTime.parse(end, formatter);
+    public List<ViewStatsDto> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, String unique) {
+        if (start == null) {
+            log.info("Дата начала поиска не задана");
+            throw new ValidationException();
+        }
+        if (end == null) {
+            log.info("Дата окончания поиска не задана");
+            throw new ValidationException();
+        }
+        validateSearchDate(start, end);
         boolean onlyUnique = Boolean.parseBoolean(unique);
         List<ViewStatsDto> viewStats;
         if (onlyUnique) {
             if (uris != null) {
-                viewStats = getUniqueStatsFromStartToEndWithUris(startDate, endDate, uris);
+                viewStats = getUniqueStatsFromStartToEndWithUris(start, end, uris);
             } else {
-                viewStats = getUniqueStatsFromStartToEnd(startDate, endDate);
+                viewStats = getUniqueStatsFromStartToEnd(start, end);
             }
         } else {
             if (uris != null) {
-                viewStats = getStatsFromStartToEndWithUris(startDate, endDate, uris);
+                viewStats = getStatsFromStartToEndWithUris(start, end, uris);
             } else {
-                viewStats = getStatsFromStartToEnd(startDate, endDate);
+                viewStats = getStatsFromStartToEnd(start, end);
             }
         }
+        log.info("Получена статистика {}", viewStats);
         return viewStats;
+    }
+
+    private void validateSearchDate(LocalDateTime startDate, LocalDateTime endDate) {
+        if (endDate.isBefore(startDate)) {
+            log.info("Дата окончания поиска {} раньше, чем дата начала {}", endDate, startDate);
+            throw new ValidationException();
+        }
     }
 
     private List<ViewStatsDto> getUniqueStatsFromStartToEndWithUris(LocalDateTime startDate, LocalDateTime endDate, List<String> uris) {
