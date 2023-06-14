@@ -2,4 +2,5 @@
 Repository for ExploreWithMe project
 
 Entity-Relationship Diagram:
-![](C:\Users\zykin\Documents\Yandex.Praktikum_Java\Diploma\ExploreWithMe.jpg)
+
+![](https://github.com/zykininho/java-explore-with-me/blob/main/ExploreWithMe.jpg)
