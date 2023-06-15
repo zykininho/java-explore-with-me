@@ -3,6 +3,7 @@ package ru.practicum.rating.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.practicum.rating.dto.EventRating;
 import ru.practicum.rating.dto.EventsRating;
 
 import java.util.List;
@@ -18,8 +19,38 @@ public class RatingServiceImpl implements RatingService {
     }
 
     @Override
+    public EventRating addEventLike(Long userId, Long eventId) {
+        return null;
+    }
+
+    @Override
     public EventsRating addEventsDislike(Long userId, List<Long> eventIds) {
         return null;
+    }
+
+    @Override
+    public EventRating addEventDislike(Long userId, Long eventId) {
+        return null;
+    }
+
+    @Override
+    public void deleteEventsLike(Long userId, List<Long> eventIds) {
+
+    }
+
+    @Override
+    public void deleteEventLike(Long userId, Long eventId) {
+
+    }
+
+    @Override
+    public void deleteEventsDislike(Long userId, List<Long> eventIds) {
+
+    }
+
+    @Override
+    public void deleteEventDislike(Long userId, Long eventId) {
+
     }
 
 }
