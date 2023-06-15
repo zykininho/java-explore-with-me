@@ -69,7 +69,7 @@ CREATE TABLE IF NOT EXISTS events_requests (
 CREATE TABLE IF NOT EXISTS ratings (
   event_id BIGINT REFERENCES events(id) NOT NULL,
   user_id BIGINT REFERENCES users(id) NOT NULL,
-  rating SMALLINT
+  rating SMALLINT,
   CONSTRAINT PK_RATINGS PRIMARY KEY (event_id, user_id)
 );
 
