@@ -66,6 +66,15 @@ CREATE TABLE IF NOT EXISTS events_requests (
   CONSTRAINT PK_EVENTS_REQUESTS PRIMARY KEY (event_id, request_id)
 );
 
+CREATE TABLE IF NOT EXISTS ratings (
+  event_id BIGINT REFERENCES events(id) NOT NULL,
+  user_id BIGINT REFERENCES users(id) NOT NULL,
+  rating SMALLINT
+  CONSTRAINT PK_RATINGS PRIMARY KEY (event_id, user_id)
+);
+
+DELETE FROM ratings;
+
 DELETE FROM compilation_events;
 
 DELETE FROM events_requests;
