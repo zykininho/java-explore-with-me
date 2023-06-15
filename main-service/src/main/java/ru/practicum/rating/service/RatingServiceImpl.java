@@ -4,7 +4,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.practicum.rating.dto.EventRating;
+import ru.practicum.rating.dto.EventTopRating;
 import ru.practicum.rating.dto.EventsRating;
+import ru.practicum.rating.dto.UserTopRating;
 
 import java.util.List;
 
@@ -51,6 +53,16 @@ public class RatingServiceImpl implements RatingService {
     @Override
     public void deleteEventDislike(Long userId, Long eventId) {
 
+    }
+
+    @Override
+    public EventTopRating getEventRating(Integer top) {
+        return null;
+    }
+
+    @Override
+    public UserTopRating getUserRating(Integer top) {
+        return null;
     }
 
 }
