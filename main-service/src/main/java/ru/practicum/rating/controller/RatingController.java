@@ -15,7 +15,7 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping("/users/{userId}/rating")
+@RequestMapping
 @RequiredArgsConstructor
 public class RatingController {
 

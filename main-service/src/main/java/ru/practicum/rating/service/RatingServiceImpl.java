@@ -2,18 +2,37 @@ package ru.practicum.rating.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
+import ru.practicum.event.mapper.EventMapper;
+import ru.practicum.event.model.Event;
+import ru.practicum.event.repo.EventRepository;
+import ru.practicum.exception.ConflictException;
+import ru.practicum.exception.NotFoundException;
+import ru.practicum.exception.ValidationException;
 import ru.practicum.rating.dto.EventRating;
 import ru.practicum.rating.dto.EventTopRating;
 import ru.practicum.rating.dto.EventsRating;
 import ru.practicum.rating.dto.UserTopRating;
+import ru.practicum.request.model.Request;
+import ru.practicum.request.repo.RequestRepository;
+import ru.practicum.user.model.User;
+import ru.practicum.user.repo.UserRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class RatingServiceImpl implements RatingService {
+
+    private final NamedParameterJdbcTemplate namedJdbcTemplate;
+    private final UserRepository userRepository;
+    private final RequestRepository requestRepository;
+    private final EventRepository eventRepository;
+    private final EventMapper eventMapper;
 
     @Override
     public EventsRating addEventsLike(Long userId, List<Long> eventIds) {
@@ -22,7 +41,70 @@ public class RatingServiceImpl implements RatingService {
 
     @Override
     public EventRating addEventLike(Long userId, Long eventId) {
-        return null;
+        User user = findUser(userId);
+        Event event = findEvent(eventId);
+        if (!userTookPartInEvent(user, event)) {
+            log.info("Пользователь {} не принимал участие в событии {}", user, event);
+            throw new ConflictException();
+        }
+        Integer rating = getUserEventRating(userId, eventId);
+        if (rating == null) {
+            log.info("Не удалось получить рейтинг события {} от пользователя {}", event, user);
+            throw new ConflictException();
+        }
+        switch (rating) {
+            case -1:
+                deleteUserRating(userId, eventId);
+            case 0:
+                addLike(userId, eventId);
+                break;
+            case 1:
+            log.info("Пользователь {} уже поставил лайк событию {}", user, event);
+            throw new ConflictException();
+        }
+        return EventRating.builder()
+                .event(eventMapper.toEventShortDto(event))
+                .rating("like")
+                .build();
+    }
+
+    private boolean userTookPartInEvent(User user, Event event) {
+        List<Request> userEventRequests = requestRepository.findAllByEventAndRequester(event, user);
+        return !userEventRequests.isEmpty();
+    }
+
+    private Integer getUserEventRating(long userId, long eventId) {
+        String sql = "SELECT CASE\n" +
+                "\t\tWHEN COUNT(RATING) = 0 THEN 0\n" +
+                "\t\tWHEN SUM(RATING) = 1 THEN 1\n" +
+                "\t\tWHEN SUM(RATING) = -1 THEN -1\n" +
+                "\t   END\n" +
+                "FROM PUBLIC.RATINGS\n" +
+                "WHERE EVENT_ID = :eventId\n" +
+                "\tAND USER_ID = :userId";
+        MapSqlParameterSource parameters = new MapSqlParameterSource();
+        parameters.addValue("userId", userId);
+        parameters.addValue("eventId", eventId);
+        return namedJdbcTemplate.queryForObject(sql, parameters, Integer.class);
+    }
+
+    private void deleteUserRating(long userId, long eventId) {
+        String sql = "DELETE FROM RATINGS WHERE EVENT_ID = :eventId AND USER_ID = :userId";
+        MapSqlParameterSource parameters = new MapSqlParameterSource();
+        parameters.addValue("userId", userId);
+        parameters.addValue("eventId", eventId);
+        namedJdbcTemplate.update(sql, parameters);
+        log.info("Удалены оценки у события {} от пользователя {}", eventId, userId);
+    }
+
+    private void addLike(long userId, long eventId) {
+        String sql = "INSERT INTO RATINGS (EVENT_ID, USER_ID, RATING)\n" +
+                "VALUES (:eventId, :userId, 1)";
+        MapSqlParameterSource parameters = new MapSqlParameterSource();
+        parameters.addValue("userId", userId);
+        parameters.addValue("eventId", eventId);
+        namedJdbcTemplate.update(sql, parameters);
+        log.info("Добавлен лайк событию {} от пользователя {}", eventId, userId);
     }
 
     @Override
@@ -32,7 +114,41 @@ public class RatingServiceImpl implements RatingService {
 
     @Override
     public EventRating addEventDislike(Long userId, Long eventId) {
-        return null;
+        User user = findUser(userId);
+        Event event = findEvent(eventId);
+        if (!userTookPartInEvent(user, event)) {
+            log.info("Пользователь {} не принимал участие в событии {}", user, event);
+            throw new ConflictException();
+        }
+        Integer rating = getUserEventRating(userId, eventId);
+        if (rating == null) {
+            log.info("Не удалось получить рейтинг события {} от пользователя {}", event, user);
+            throw new ConflictException();
+        }
+        switch (rating) {
+            case 1:
+                deleteUserRating(userId, eventId);
+            case 0:
+                addDislike(userId, eventId);
+                break;
+            case -1:
+                log.info("Пользователь {} уже поставил дизлайк событию {}", user, event);
+                throw new ConflictException();
+        }
+        return EventRating.builder()
+                .event(eventMapper.toEventShortDto(event))
+                .rating("dislike")
+                .build();
+    }
+
+    private void addDislike(long userId, long eventId) {
+        String sql = "INSERT INTO RATINGS (EVENT_ID, USER_ID, RATING)\n" +
+                "VALUES (:eventId, :userId, -1)";
+        MapSqlParameterSource parameters = new MapSqlParameterSource();
+        parameters.addValue("userId", userId);
+        parameters.addValue("eventId", eventId);
+        namedJdbcTemplate.update(sql, parameters);
+        log.info("Добавлен дизлайк событию {} от пользователя {}", eventId, userId);
     }
 
     @Override
@@ -63,6 +179,34 @@ public class RatingServiceImpl implements RatingService {
     @Override
     public UserTopRating getUserRating(Integer top) {
         return null;
+    }
+
+    private User findUser(long userId) {
+        if (userId == 0) {
+            log.info("Передан неверный идентификатор пользователя {}", userId);
+            throw new ValidationException();
+        }
+        Optional<User> user = userRepository.findById(userId);
+        if (user.isEmpty()) {
+            log.info("Не найден пользователь с идентификатором {}", userId);
+            throw new NotFoundException();
+        }
+        log.info("Найден пользователь с идентификатором {}", userId);
+        return user.get();
+    }
+
+    private Event findEvent(long eventId) {
+        if (eventId == 0) {
+            log.info("Передан неверный идентификатор события {}", eventId);
+            throw new ValidationException();
+        }
+        Optional<Event> event = eventRepository.findById(eventId);
+        if (event.isEmpty()) {
+            log.info("Не найдено событие с идентификатором {}", eventId);
+            throw new NotFoundException();
+        }
+        log.info("Найдено событие с идентификатором {}", eventId);
+        return event.get();
     }
 
 }

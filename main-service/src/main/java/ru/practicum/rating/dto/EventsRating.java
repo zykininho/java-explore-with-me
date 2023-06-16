@@ -2,6 +2,7 @@ package ru.practicum.rating.dto;
 
 import lombok.Builder;
 import lombok.Data;
+import ru.practicum.event.dto.EventShortDto;
 
 import java.util.List;
 
@@ -9,7 +10,7 @@ import java.util.List;
 @Builder
 public class EventsRating {
 
-    private List<Long> eventIds;
+    private List<EventShortDto> eventIds;
     private String rating;
 
 }
