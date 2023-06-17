@@ -93,7 +93,7 @@ public class RatingServiceImpl implements RatingService {
 
     private void checkUserTookPartInEvent(User user, Event event) {
         List<Request> userEventRequests = requestRepository.findAllByEventAndRequester(event, user);
-        if (!userEventRequests.isEmpty()) {
+        if (userEventRequests.isEmpty()) {
             log.info("Пользователь {} не принимал участие в событии {}", user, event);
             throw new ConflictException();
         }
@@ -199,6 +199,11 @@ public class RatingServiceImpl implements RatingService {
         for (Long eventId : eventIds) {
             Event event = findEvent(eventId);
             checkUserTookPartInEvent(user, event);
+            int rating = getUserEventRating(userId, eventId);
+            if (rating != 1) {
+                log.info("Пользователь {} не ставил лайк событию {}", user, event);
+                throw new ConflictException();
+            }
         }
         deleteUserRatings(userId, eventIds);
     }
@@ -221,6 +226,11 @@ public class RatingServiceImpl implements RatingService {
         for (Long eventId : eventIds) {
             Event event = findEvent(eventId);
             checkUserTookPartInEvent(user, event);
+            int rating = getUserEventRating(userId, eventId);
+            if (rating != -1) {
+                log.info("Пользователь {} не ставил дизлайк событию {}", user, event);
+                throw new ConflictException();
+            }
         }
         deleteUserRatings(userId, eventIds);
     }
