@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
+import ru.practicum.event.dto.EventShortDto;
 import ru.practicum.event.mapper.EventMapper;
 import ru.practicum.event.model.Event;
 import ru.practicum.event.repo.EventRepository;
@@ -249,8 +250,21 @@ public class RatingServiceImpl implements RatingService {
 
     @Override
     public EventTopRating getEventRating(Integer top) {
-        // TODO: добавить реализацию
-        return null;
+        String sql = "SELECT event_id\n" +
+                "FROM PUBLIC.RATINGS\n" +
+                "GROUP BY event_id\n" +
+                "ORDER BY SUM(rating) DESC\n" +
+                "LIMIT :top";
+        MapSqlParameterSource parameters = new MapSqlParameterSource();
+        parameters.addValue("top", top);
+        List<Event> events = namedJdbcTemplate.query(sql, parameters, (rs, rowNum) ->
+                findEvent(rs.getLong("event_id")));
+        log.info("Получен рейтинг топ-{} событий: {}", top, events);
+        return EventTopRating.builder()
+                .events(events.stream()
+                        .map(eventMapper::toEventShortDto)
+                        .collect(Collectors.toList()))
+                .build();
     }
 
     @Override
