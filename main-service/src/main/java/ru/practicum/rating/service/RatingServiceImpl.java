@@ -20,8 +20,10 @@ import ru.practicum.request.repo.RequestRepository;
 import ru.practicum.user.model.User;
 import ru.practicum.user.repo.UserRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -36,27 +38,48 @@ public class RatingServiceImpl implements RatingService {
 
     @Override
     public EventsRating addEventsLike(Long userId, List<Long> eventIds) {
-        return null;
+        User user = findUser(userId);
+        List<Event> eventsToAddLike = new ArrayList<>();
+        for (Long eventId : eventIds) {
+            Event event = findEvent(eventId);
+            checkUserTookPartInEvent(user, event);
+            eventsToAddLike.add(event);
+        }
+        addLikes(userId, eventIds);
+        return EventsRating.builder()
+                .eventIds(eventsToAddLike.stream()
+                        .map(eventMapper::toEventShortDto)
+                        .collect(Collectors.toList()))
+                .rating("like")
+                .build();
+    }
+
+    private void addLikes(Long userId, List<Long> eventIds) {
+        List<String> listValues = new ArrayList<>();
+        String value = "(%d, :userId, 1)";
+        StringBuilder sql = new StringBuilder("INSERT INTO RATINGS (EVENT_ID, USER_ID, RATING) VALUES ");
+        for (Long eventId : eventIds) {
+            listValues.add(String.format(value, eventId));
+        }
+        String values = String.join(",", listValues);
+        sql.append(values);
+        MapSqlParameterSource parameters = new MapSqlParameterSource();
+        parameters.addValue("userId", userId);
+        namedJdbcTemplate.update(sql.toString(), parameters);
+        log.info("Добавлен лайк событиям {} от пользователя {}", eventIds, userId);
     }
 
     @Override
     public EventRating addEventLike(Long userId, Long eventId) {
         User user = findUser(userId);
         Event event = findEvent(eventId);
-        if (!userTookPartInEvent(user, event)) {
-            log.info("Пользователь {} не принимал участие в событии {}", user, event);
-            throw new ConflictException();
-        }
-        Integer rating = getUserEventRating(userId, eventId);
-        if (rating == null) {
-            log.info("Не удалось получить рейтинг события {} от пользователя {}", event, user);
-            throw new ConflictException();
-        }
+        checkUserTookPartInEvent(user, event);
+        int rating = getUserEventRating(userId, eventId);
         switch (rating) {
             case -1:
-                deleteUserRating(userId, eventId);
+                deleteUserRatings(userId, List.of(eventId));
             case 0:
-                addLike(userId, eventId);
+                addLikes(userId, List.of(eventId));
                 break;
             case 1:
             log.info("Пользователь {} уже поставил лайк событию {}", user, event);
@@ -68,12 +91,15 @@ public class RatingServiceImpl implements RatingService {
                 .build();
     }
 
-    private boolean userTookPartInEvent(User user, Event event) {
+    private void checkUserTookPartInEvent(User user, Event event) {
         List<Request> userEventRequests = requestRepository.findAllByEventAndRequester(event, user);
-        return !userEventRequests.isEmpty();
+        if (!userEventRequests.isEmpty()) {
+            log.info("Пользователь {} не принимал участие в событии {}", user, event);
+            throw new ConflictException();
+        }
     }
 
-    private Integer getUserEventRating(long userId, long eventId) {
+    private int getUserEventRating(long userId, long eventId) {
         String sql = "SELECT CASE\n" +
                 "\t\tWHEN COUNT(RATING) = 0 THEN 0\n" +
                 "\t\tWHEN SUM(RATING) = 1 THEN 1\n" +
@@ -85,49 +111,65 @@ public class RatingServiceImpl implements RatingService {
         MapSqlParameterSource parameters = new MapSqlParameterSource();
         parameters.addValue("userId", userId);
         parameters.addValue("eventId", eventId);
-        return namedJdbcTemplate.queryForObject(sql, parameters, Integer.class);
+        Integer rating = namedJdbcTemplate.queryForObject(sql, parameters, Integer.class);
+        if (rating == null) {
+            log.info("Не удалось получить рейтинг события {} от пользователя {}", userId, eventId);
+            throw new ConflictException();
+        }
+        return rating;
     }
 
-    private void deleteUserRating(long userId, long eventId) {
-        String sql = "DELETE FROM RATINGS WHERE EVENT_ID = :eventId AND USER_ID = :userId";
+    private void deleteUserRatings(long userId, List<Long> eventIds) {
+        String sql = "DELETE FROM RATINGS WHERE EVENT_ID IN (:eventIds) AND USER_ID = :userId";
         MapSqlParameterSource parameters = new MapSqlParameterSource();
+        parameters.addValue("eventIds", eventIds);
         parameters.addValue("userId", userId);
-        parameters.addValue("eventId", eventId);
         namedJdbcTemplate.update(sql, parameters);
-        log.info("Удалены оценки у события {} от пользователя {}", eventId, userId);
-    }
-
-    private void addLike(long userId, long eventId) {
-        String sql = "INSERT INTO RATINGS (EVENT_ID, USER_ID, RATING)\n" +
-                "VALUES (:eventId, :userId, 1)";
-        MapSqlParameterSource parameters = new MapSqlParameterSource();
-        parameters.addValue("userId", userId);
-        parameters.addValue("eventId", eventId);
-        namedJdbcTemplate.update(sql, parameters);
-        log.info("Добавлен лайк событию {} от пользователя {}", eventId, userId);
+        log.info("Удалены оценки у событий {} от пользователя {}", eventIds, userId);
     }
 
     @Override
     public EventsRating addEventsDislike(Long userId, List<Long> eventIds) {
-        return null;
+        User user = findUser(userId);
+        List<Event> eventsToAddLike = new ArrayList<>();
+        for (Long eventId : eventIds) {
+            Event event = findEvent(eventId);
+            checkUserTookPartInEvent(user, event);
+            eventsToAddLike.add(event);
+        }
+        addDislikes(userId, eventIds);
+        return EventsRating.builder()
+                .eventIds(eventsToAddLike.stream()
+                        .map(eventMapper::toEventShortDto)
+                        .collect(Collectors.toList()))
+                .rating("dislike")
+                .build();
+    }
+
+    private void addDislikes(Long userId, List<Long> eventIds) {
+        List<String> listValues = new ArrayList<>();
+        String value = "(%d, :userId, -1)";
+        StringBuilder sql = new StringBuilder("INSERT INTO RATINGS (EVENT_ID, USER_ID, RATING) VALUES ");
+        for (Long eventId : eventIds) {
+            listValues.add(String.format(value, eventId));
+        }
+        String values = String.join(",", listValues);
+        sql.append(values);
+        MapSqlParameterSource parameters = new MapSqlParameterSource();
+        parameters.addValue("userId", userId);
+        namedJdbcTemplate.update(sql.toString(), parameters);
+        log.info("Добавлен дизлайк событиям {} от пользователя {}", eventIds, userId);
     }
 
     @Override
     public EventRating addEventDislike(Long userId, Long eventId) {
         User user = findUser(userId);
         Event event = findEvent(eventId);
-        if (!userTookPartInEvent(user, event)) {
-            log.info("Пользователь {} не принимал участие в событии {}", user, event);
-            throw new ConflictException();
-        }
-        Integer rating = getUserEventRating(userId, eventId);
-        if (rating == null) {
-            log.info("Не удалось получить рейтинг события {} от пользователя {}", event, user);
-            throw new ConflictException();
-        }
+        checkUserTookPartInEvent(user, event);
+        int rating = getUserEventRating(userId, eventId);
         switch (rating) {
             case 1:
-                deleteUserRating(userId, eventId);
+                deleteUserRatings(userId, List.of(eventId));
             case 0:
                 addDislike(userId, eventId);
                 break;
@@ -153,31 +195,57 @@ public class RatingServiceImpl implements RatingService {
 
     @Override
     public void deleteEventsLike(Long userId, List<Long> eventIds) {
-
+        User user = findUser(userId);
+        for (Long eventId : eventIds) {
+            Event event = findEvent(eventId);
+            checkUserTookPartInEvent(user, event);
+        }
+        deleteUserRatings(userId, eventIds);
     }
 
     @Override
     public void deleteEventLike(Long userId, Long eventId) {
-
+        User user = findUser(userId);
+        Event event = findEvent(eventId);
+        int rating = getUserEventRating(userId, eventId);
+        if (rating != 1) {
+            log.info("Пользователь {} не ставил лайк событию {}", user, event);
+            throw new ConflictException();
+        }
+        deleteUserRatings(userId, List.of(eventId));
     }
 
     @Override
     public void deleteEventsDislike(Long userId, List<Long> eventIds) {
-
+        User user = findUser(userId);
+        for (Long eventId : eventIds) {
+            Event event = findEvent(eventId);
+            checkUserTookPartInEvent(user, event);
+        }
+        deleteUserRatings(userId, eventIds);
     }
 
     @Override
     public void deleteEventDislike(Long userId, Long eventId) {
-
+        User user = findUser(userId);
+        Event event = findEvent(eventId);
+        int rating = getUserEventRating(userId, eventId);
+        if (rating != -1) {
+            log.info("Пользователь {} не ставил дизлайк событию {}", user, event);
+            throw new ConflictException();
+        }
+        deleteUserRatings(userId, List.of(eventId));
     }
 
     @Override
     public EventTopRating getEventRating(Integer top) {
+        // TODO: добавить реализацию
         return null;
     }
 
     @Override
     public UserTopRating getUserRating(Integer top) {
+        // TODO: добавить реализацию
         return null;
     }
 
