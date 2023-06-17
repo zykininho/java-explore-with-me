@@ -20,11 +20,8 @@
 							"    pm.response.to.be.withBody;\r",
 							"    pm.response.to.be.json;\r",
 							"});\r",
-							"pm.test(\"Test user 'id' field\", function () {\r",
-							"    var jsonData = pm.response.json();\r",
-							"    pm.expect(jsonData).to.have.property('id');\r",
-							"    pm.expect(jsonData.id, '\"id\" must be 1').to.eql(1);\r",
-							"});"
+							"var jsonData = pm.response.json();\r",
+							"pm.collectionVariables.set(\"user1\", jsonData.id);"
 						],
 						"type": "text/javascript"
 					}
@@ -35,7 +32,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"email\": \"ivan.petrov@practicummail.ru\",\r\n    \"name\": \"Иван Петров\"\r\n}",
+					"raw": "{\r\n    \"email\": \"ivank.petrova@practicummail.ru\",\r\n    \"name\": \"Иванка Петрова\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -69,11 +66,8 @@
 							"    pm.response.to.be.withBody;\r",
 							"    pm.response.to.be.json;\r",
 							"});\r",
-							"pm.test(\"Test category 'id' field\", function () {\r",
-							"    var jsonData = pm.response.json();\r",
-							"    pm.expect(jsonData).to.have.property('id');\r",
-							"    pm.expect(jsonData.id, '\"id\" must be 1').to.eql(1);\r",
-							"});"
+							"var jsonData = pm.response.json();\r",
+							"pm.collectionVariables.set(\"category1\", jsonData.id);"
 						],
 						"type": "text/javascript"
 					}
@@ -84,7 +78,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"name\": \"Концерты\"\r\n}",
+					"raw": "{\r\n    \"name\": \"Концерты1\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -118,16 +112,13 @@
 							"    pm.response.to.be.withBody;\r",
 							"    pm.response.to.be.json;\r",
 							"});\r",
-							"pm.test(\"Test event 'id' field\", function () {\r",
-							"    var jsonData = pm.response.json();\r",
-							"    pm.expect(jsonData).to.have.property('id');\r",
-							"    pm.expect(jsonData.id, '\"id\" must be 1').to.eql(1);\r",
-							"});\r",
 							"pm.test(\"Test event 'state' field\", function () {\r",
 							"    var jsonData = pm.response.json();\r",
 							"    pm.expect(jsonData).to.have.property('id');\r",
 							"    pm.expect(jsonData.state, '\"state\" must be \"PENDING\"').to.eql(\"PENDING\");\r",
-							"});"
+							"});\r",
+							"var jsonData = pm.response.json();\r",
+							"pm.collectionVariables.set(\"event1\", jsonData.id);"
 						],
 						"type": "text/javascript"
 					}
@@ -146,13 +137,13 @@
 					}
 				},
 				"url": {
-					"raw": "{{baseUrl}}/users/{{userId}}/events",
+					"raw": "{{baseUrl}}/users/{{user1}}/events",
 					"host": [
 						"{{baseUrl}}"
 					],
 					"path": [
 						"users",
-						"{{userId}}",
+						"{{user1}}",
 						"events"
 					]
 				}
@@ -196,20 +187,14 @@
 					}
 				},
 				"url": {
-					"raw": "{{baseUrl}}/admin/events/:eventId",
+					"raw": "{{baseUrl}}/admin/events/{{event1}}",
 					"host": [
 						"{{baseUrl}}"
 					],
 					"path": [
 						"admin",
 						"events",
-						":eventId"
-					],
-					"variable": [
-						{
-							"key": "eventId",
-							"value": "1"
-						}
+						"{{event1}}"
 					]
 				}
 			},
@@ -243,19 +228,19 @@
 					}
 				},
 				"url": {
-					"raw": "{{baseUrl}}/users/{{userId}}/like?eventId=1",
+					"raw": "{{baseUrl}}/users/{{user1}}/like?eventId={{event1}}",
 					"host": [
 						"{{baseUrl}}"
 					],
 					"path": [
 						"users",
-						"{{userId}}",
+						"{{user1}}",
 						"like"
 					],
 					"query": [
 						{
 							"key": "eventId",
-							"value": "1"
+							"value": "{{event1}}"
 						}
 					]
 				}
@@ -276,11 +261,8 @@
 							"    pm.response.to.be.withBody;\r",
 							"    pm.response.to.be.json;\r",
 							"});\r",
-							"pm.test(\"Test user 'id' field\", function () {\r",
-							"    var jsonData = pm.response.json();\r",
-							"    pm.expect(jsonData).to.have.property('id');\r",
-							"    pm.expect(jsonData.id, '\"id\" must be 2').to.eql(2);\r",
-							"});"
+							"var jsonData = pm.response.json();\r",
+							"pm.collectionVariables.set(\"user2\", jsonData.id);"
 						],
 						"type": "text/javascript"
 					}
@@ -324,11 +306,6 @@
 							"pm.test(\"Has request create response\", function () {\r",
 							"    pm.response.to.be.withBody;\r",
 							"    pm.response.to.be.json;\r",
-							"});\r",
-							"pm.test(\"Test request 'id' field\", function () {\r",
-							"    var jsonData = pm.response.json();\r",
-							"    pm.expect(jsonData).to.have.property('id');\r",
-							"    pm.expect(jsonData.id, '\"id\" must be 1').to.eql(1);\r",
 							"});"
 						],
 						"type": "text/javascript"
@@ -339,19 +316,19 @@
 				"method": "POST",
 				"header": [],
 				"url": {
-					"raw": "{{baseUrl}}/users/2/requests?eventId=1",
+					"raw": "{{baseUrl}}/users/{{user2}}/requests?eventId={{event1}}",
 					"host": [
 						"{{baseUrl}}"
 					],
 					"path": [
 						"users",
-						"2",
+						"{{user2}}",
 						"requests"
 					],
 					"query": [
 						{
 							"key": "eventId",
-							"value": "1"
+							"value": "{{event1}}"
 						}
 					]
 				}
@@ -386,25 +363,19 @@
 					}
 				},
 				"url": {
-					"raw": "{{baseUrl}}/users/:userId/like?eventId=1",
+					"raw": "{{baseUrl}}/users/{{user2}}/like?eventId={{event1}}",
 					"host": [
 						"{{baseUrl}}"
 					],
 					"path": [
 						"users",
-						":userId",
+						"{{user2}}",
 						"like"
 					],
 					"query": [
 						{
 							"key": "eventId",
-							"value": "1"
-						}
-					],
-					"variable": [
-						{
-							"key": "userId",
-							"value": "2"
+							"value": "{{event1}}"
 						}
 					]
 				}
@@ -439,25 +410,19 @@
 					}
 				},
 				"url": {
-					"raw": "{{baseUrl}}/users/:userId/like?eventId=1",
+					"raw": "{{baseUrl}}/users/{{user2}}/like?eventId={{event1}}",
 					"host": [
 						"{{baseUrl}}"
 					],
 					"path": [
 						"users",
-						":userId",
+						"{{user2}}",
 						"like"
 					],
 					"query": [
 						{
 							"key": "eventId",
-							"value": "1"
-						}
-					],
-					"variable": [
-						{
-							"key": "userId",
-							"value": "2"
+							"value": "{{event1}}"
 						}
 					]
 				}
@@ -492,25 +457,19 @@
 					}
 				},
 				"url": {
-					"raw": "{{baseUrl}}/users/:userId/dislike?eventId=1",
+					"raw": "{{baseUrl}}/users/{{user2}}/dislike?eventId={{event1}}",
 					"host": [
 						"{{baseUrl}}"
 					],
 					"path": [
 						"users",
-						":userId",
+						"{{user2}}",
 						"dislike"
 					],
 					"query": [
 						{
 							"key": "eventId",
-							"value": "1"
-						}
-					],
-					"variable": [
-						{
-							"key": "userId",
-							"value": "2"
+							"value": "{{event1}}"
 						}
 					]
 				}
@@ -545,25 +504,19 @@
 					}
 				},
 				"url": {
-					"raw": "{{baseUrl}}/users/:userId/dislike?eventId=1",
+					"raw": "{{baseUrl}}/users/{{user2}}/dislike?eventId={{event1}}",
 					"host": [
 						"{{baseUrl}}"
 					],
 					"path": [
 						"users",
-						":userId",
+						"{{user2}}",
 						"dislike"
 					],
 					"query": [
 						{
 							"key": "eventId",
-							"value": "1"
-						}
-					],
-					"variable": [
-						{
-							"key": "userId",
-							"value": "2"
+							"value": "{{event1}}"
 						}
 					]
 				}
@@ -584,16 +537,13 @@
 							"    pm.response.to.be.withBody;\r",
 							"    pm.response.to.be.json;\r",
 							"});\r",
-							"pm.test(\"Test event 'id' field\", function () {\r",
-							"    var jsonData = pm.response.json();\r",
-							"    pm.expect(jsonData).to.have.property('id');\r",
-							"    pm.expect(jsonData.id, '\"id\" must be 2').to.eql(2);\r",
-							"});\r",
 							"pm.test(\"Test event 'state' field\", function () {\r",
 							"    var jsonData = pm.response.json();\r",
 							"    pm.expect(jsonData).to.have.property('id');\r",
 							"    pm.expect(jsonData.state, '\"state\" must be \"PENDING\"').to.eql(\"PENDING\");\r",
-							"});"
+							"});\r",
+							"var jsonData = pm.response.json();\r",
+							"pm.collectionVariables.set(\"event2\", jsonData.id);"
 						],
 						"type": "text/javascript"
 					}
@@ -612,13 +562,13 @@
 					}
 				},
 				"url": {
-					"raw": "{{baseUrl}}/users/{{userId}}/events",
+					"raw": "{{baseUrl}}/users/{{user1}}/events",
 					"host": [
 						"{{baseUrl}}"
 					],
 					"path": [
 						"users",
-						"{{userId}}",
+						"{{user1}}",
 						"events"
 					]
 				}
@@ -709,25 +659,19 @@
 					}
 				},
 				"url": {
-					"raw": "{{baseUrl}}/users/:userId/likes?eventIds=1,2",
+					"raw": "{{baseUrl}}/users/{{user2}}/likes?eventIds={{event1}},{{event2}}",
 					"host": [
 						"{{baseUrl}}"
 					],
 					"path": [
 						"users",
-						":userId",
+						"{{user2}}",
 						"likes"
 					],
 					"query": [
 						{
 							"key": "eventIds",
-							"value": "1,2"
-						}
-					],
-					"variable": [
-						{
-							"key": "userId",
-							"value": "2"
+							"value": "{{event1}},{{event2}}"
 						}
 					]
 				}
@@ -748,11 +692,7 @@
 							"    pm.response.to.be.withBody;\r",
 							"    pm.response.to.be.json;\r",
 							"});\r",
-							"pm.test(\"Test request 'id' field\", function () {\r",
-							"    var jsonData = pm.response.json();\r",
-							"    pm.expect(jsonData).to.have.property('id');\r",
-							"    pm.expect(jsonData.id, '\"id\" must be 2').to.eql(2);\r",
-							"});"
+							""
 						],
 						"type": "text/javascript"
 					}
@@ -762,19 +702,19 @@
 				"method": "POST",
 				"header": [],
 				"url": {
-					"raw": "{{baseUrl}}/users/2/requests?eventId=2",
+					"raw": "{{baseUrl}}/users/{{user2}}/requests?eventId={{event2}}",
 					"host": [
 						"{{baseUrl}}"
 					],
 					"path": [
 						"users",
-						"2",
+						"{{user2}}",
 						"requests"
 					],
 					"query": [
 						{
 							"key": "eventId",
-							"value": "2"
+							"value": "{{event2}}"
 						}
 					]
 				}
@@ -809,25 +749,19 @@
 					}
 				},
 				"url": {
-					"raw": "{{baseUrl}}/users/:userId/likes?eventIds=1,2",
+					"raw": "{{baseUrl}}/users/{{user2}}/likes?eventIds={{event1}},{{event2}}",
 					"host": [
 						"{{baseUrl}}"
 					],
 					"path": [
 						"users",
-						":userId",
+						"{{user2}}",
 						"likes"
 					],
 					"query": [
 						{
 							"key": "eventIds",
-							"value": "1,2"
-						}
-					],
-					"variable": [
-						{
-							"key": "userId",
-							"value": "2"
+							"value": "{{event1}},{{event2}}"
 						}
 					]
 				}
@@ -848,11 +782,8 @@
 							"    pm.response.to.be.withBody;\r",
 							"    pm.response.to.be.json;\r",
 							"});\r",
-							"pm.test(\"Test user 'id' field\", function () {\r",
-							"    var jsonData = pm.response.json();\r",
-							"    pm.expect(jsonData).to.have.property('id');\r",
-							"    pm.expect(jsonData.id, '\"id\" must be 3').to.eql(3);\r",
-							"});"
+							"var jsonData = pm.response.json();\r",
+							"pm.collectionVariables.set(\"user3\", jsonData.id);"
 						],
 						"type": "text/javascript"
 					}
@@ -897,11 +828,7 @@
 							"    pm.response.to.be.withBody;\r",
 							"    pm.response.to.be.json;\r",
 							"});\r",
-							"pm.test(\"Test request 'id' field\", function () {\r",
-							"    var jsonData = pm.response.json();\r",
-							"    pm.expect(jsonData).to.have.property('id');\r",
-							"    pm.expect(jsonData.id, '\"id\" must be 3').to.eql(3);\r",
-							"});"
+							""
 						],
 						"type": "text/javascript"
 					}
@@ -911,25 +838,19 @@
 				"method": "POST",
 				"header": [],
 				"url": {
-					"raw": "{{baseUrl}}/users/:userId/requests?eventId=2",
+					"raw": "{{baseUrl}}/users/{{user3}}/requests?eventId={{event2}}",
 					"host": [
 						"{{baseUrl}}"
 					],
 					"path": [
 						"users",
-						":userId",
+						"{{user3}}",
 						"requests"
 					],
 					"query": [
 						{
 							"key": "eventId",
-							"value": "2"
-						}
-					],
-					"variable": [
-						{
-							"key": "userId",
-							"value": "3"
+							"value": "{{event2}}"
 						}
 					]
 				}
@@ -950,11 +871,8 @@
 							"    pm.response.to.be.withBody;\r",
 							"    pm.response.to.be.json;\r",
 							"});\r",
-							"pm.test(\"Test user 'id' field\", function () {\r",
-							"    var jsonData = pm.response.json();\r",
-							"    pm.expect(jsonData).to.have.property('id');\r",
-							"    pm.expect(jsonData.id, '\"id\" must be 4').to.eql(4);\r",
-							"});"
+							"var jsonData = pm.response.json();\r",
+							"pm.collectionVariables.set(\"user4\", jsonData.id);"
 						],
 						"type": "text/javascript"
 					}
@@ -999,16 +917,13 @@
 							"    pm.response.to.be.withBody;\r",
 							"    pm.response.to.be.json;\r",
 							"});\r",
-							"pm.test(\"Test event 'id' field\", function () {\r",
-							"    var jsonData = pm.response.json();\r",
-							"    pm.expect(jsonData).to.have.property('id');\r",
-							"    pm.expect(jsonData.id, '\"id\" must be 3').to.eql(3);\r",
-							"});\r",
 							"pm.test(\"Test event 'state' field\", function () {\r",
 							"    var jsonData = pm.response.json();\r",
 							"    pm.expect(jsonData).to.have.property('id');\r",
 							"    pm.expect(jsonData.state, '\"state\" must be \"PENDING\"').to.eql(\"PENDING\");\r",
-							"});"
+							"});\r",
+							"var jsonData = pm.response.json();\r",
+							"pm.collectionVariables.set(\"event3\", jsonData.id);"
 						],
 						"type": "text/javascript"
 					}
@@ -1027,20 +942,14 @@
 					}
 				},
 				"url": {
-					"raw": "{{baseUrl}}/users/:userId/events",
+					"raw": "{{baseUrl}}/users/{{user4}}/events",
 					"host": [
 						"{{baseUrl}}"
 					],
 					"path": [
 						"users",
-						":userId",
+						"{{user4}}",
 						"events"
-					],
-					"variable": [
-						{
-							"key": "userId",
-							"value": "4"
-						}
 					]
 				}
 			},
@@ -1115,11 +1024,6 @@
 							"pm.test(\"Has request create response\", function () {\r",
 							"    pm.response.to.be.withBody;\r",
 							"    pm.response.to.be.json;\r",
-							"});\r",
-							"pm.test(\"Test request 'id' field\", function () {\r",
-							"    var jsonData = pm.response.json();\r",
-							"    pm.expect(jsonData).to.have.property('id');\r",
-							"    pm.expect(jsonData.id, '\"id\" must be 4').to.eql(4);\r",
 							"});"
 						],
 						"type": "text/javascript"
@@ -1130,25 +1034,19 @@
 				"method": "POST",
 				"header": [],
 				"url": {
-					"raw": "{{baseUrl}}/users/:userId/requests?eventId=3",
+					"raw": "{{baseUrl}}/users/{{user3}}/requests?eventId={{event3}}",
 					"host": [
 						"{{baseUrl}}"
 					],
 					"path": [
 						"users",
-						":userId",
+						"{{user3}}",
 						"requests"
 					],
 					"query": [
 						{
 							"key": "eventId",
-							"value": "3"
-						}
-					],
-					"variable": [
-						{
-							"key": "userId",
-							"value": "3"
+							"value": "{{event3}}"
 						}
 					]
 				}
@@ -1183,25 +1081,19 @@
 					}
 				},
 				"url": {
-					"raw": "{{baseUrl}}/users/:userId/like?eventId=3",
+					"raw": "{{baseUrl}}/users/{{user3}}/like?eventId={{event3}}",
 					"host": [
 						"{{baseUrl}}"
 					],
 					"path": [
 						"users",
-						":userId",
+						"{{user3}}",
 						"like"
 					],
 					"query": [
 						{
 							"key": "eventId",
-							"value": "3"
-						}
-					],
-					"variable": [
-						{
-							"key": "userId",
-							"value": "3"
+							"value": "{{event3}}"
 						}
 					]
 				}
@@ -1308,25 +1200,19 @@
 					}
 				},
 				"url": {
-					"raw": "{{baseUrl}}/users/:userId/likes?eventIds=1,2",
+					"raw": "{{baseUrl}}/users/{{user2}}/likes?eventIds={{event1}},{{event2}}",
 					"host": [
 						"{{baseUrl}}"
 					],
 					"path": [
 						"users",
-						":userId",
+						"{{user2}}",
 						"likes"
 					],
 					"query": [
 						{
 							"key": "eventIds",
-							"value": "1,2"
-						}
-					],
-					"variable": [
-						{
-							"key": "userId",
-							"value": "2"
+							"value": "{{event1}},{{event2}}"
 						}
 					]
 				}
@@ -1361,25 +1247,19 @@
 					}
 				},
 				"url": {
-					"raw": "{{baseUrl}}/users/:userId/dislikes?eventIds=1,2",
+					"raw": "{{baseUrl}}/users/{{user2}}/dislikes?eventIds={{event1}},{{event2}}",
 					"host": [
 						"{{baseUrl}}"
 					],
 					"path": [
 						"users",
-						":userId",
+						"{{user2}}",
 						"dislikes"
 					],
 					"query": [
 						{
 							"key": "eventIds",
-							"value": "1,2"
-						}
-					],
-					"variable": [
-						{
-							"key": "userId",
-							"value": "2"
+							"value": "{{event1}},{{event2}}"
 						}
 					]
 				}
@@ -1498,25 +1378,19 @@
 					}
 				},
 				"url": {
-					"raw": "{{baseUrl}}/users/:userId/dislikes?eventIds=1,2",
+					"raw": "{{baseUrl}}/users/{{user2}}/dislikes?eventIds={{event1}},{{event2}}",
 					"host": [
 						"{{baseUrl}}"
 					],
 					"path": [
 						"users",
-						":userId",
+						"{{user2}}",
 						"dislikes"
 					],
 					"query": [
 						{
 							"key": "eventIds",
-							"value": "1,2"
-						}
-					],
-					"variable": [
-						{
-							"key": "userId",
-							"value": "2"
+							"value": "{{event1}},{{event2}}"
 						}
 					]
 				}
@@ -1551,8 +1425,43 @@
 			"type": "string"
 		},
 		{
-			"key": "userId",
+			"key": "user1",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "user2",
 			"value": "1"
+		},
+		{
+			"key": "user3",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "user4",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "category1",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "event1",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "event2",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "event3",
+			"value": "1",
+			"type": "string"
 		}
 	]
 }
