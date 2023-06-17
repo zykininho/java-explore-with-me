@@ -172,6 +172,15 @@
 						],
 						"type": "text/javascript"
 					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"setTimeout(function(){}, [1000]);"
+						],
+						"type": "text/javascript"
+					}
 				}
 			],
 			"request": {
@@ -597,6 +606,15 @@
 						],
 						"type": "text/javascript"
 					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"setTimeout(function(){}, [1000]);"
+						],
+						"type": "text/javascript"
+					}
 				}
 			],
 			"request": {
@@ -612,20 +630,14 @@
 					}
 				},
 				"url": {
-					"raw": "{{baseUrl}}/admin/events/:eventId",
+					"raw": "{{baseUrl}}/admin/events/{{event2}}",
 					"host": [
 						"{{baseUrl}}"
 					],
 					"path": [
 						"admin",
 						"events",
-						":eventId"
-					],
-					"variable": [
-						{
-							"key": "eventId",
-							"value": "2"
-						}
+						"{{event2}}"
 					]
 				}
 			},
@@ -977,6 +989,15 @@
 						],
 						"type": "text/javascript"
 					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"setTimeout(function(){}, [1000]);"
+						],
+						"type": "text/javascript"
+					}
 				}
 			],
 			"request": {
@@ -992,20 +1013,14 @@
 					}
 				},
 				"url": {
-					"raw": "{{baseUrl}}/admin/events/:eventId",
+					"raw": "{{baseUrl}}/admin/events/{{event3}}",
 					"host": [
 						"{{baseUrl}}"
 					],
 					"path": [
 						"admin",
 						"events",
-						":eventId"
-					],
-					"variable": [
-						{
-							"key": "eventId",
-							"value": "3"
-						}
+						"{{event3}}"
 					]
 				}
 			},
