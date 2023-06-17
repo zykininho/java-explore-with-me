@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
-import ru.practicum.event.dto.EventShortDto;
 import ru.practicum.event.mapper.EventMapper;
 import ru.practicum.event.model.Event;
 import ru.practicum.event.repo.EventRepository;
@@ -18,6 +17,7 @@ import ru.practicum.rating.dto.EventsRating;
 import ru.practicum.rating.dto.UserTopRating;
 import ru.practicum.request.model.Request;
 import ru.practicum.request.repo.RequestRepository;
+import ru.practicum.user.mapper.UserMapper;
 import ru.practicum.user.model.User;
 import ru.practicum.user.repo.UserRepository;
 
@@ -36,6 +36,7 @@ public class RatingServiceImpl implements RatingService {
     private final RequestRepository requestRepository;
     private final EventRepository eventRepository;
     private final EventMapper eventMapper;
+    private final UserMapper userMapper;
 
     @Override
     public EventsRating addEventsLike(Long userId, List<Long> eventIds) {
@@ -269,8 +270,22 @@ public class RatingServiceImpl implements RatingService {
 
     @Override
     public UserTopRating getUserRating(Integer top) {
-        // TODO: добавить реализацию
-        return null;
+        String sql = "SELECT events.initiator_id\n" +
+                "FROM PUBLIC.RATINGS\n" +
+                "LEFT JOIN events ON RATINGS.EVENT_ID = EVENTS.ID\n" +
+                "GROUP BY initiator_id\n" +
+                "ORDER BY SUM(rating) DESC\n" +
+                "LIMIT :top";
+        MapSqlParameterSource parameters = new MapSqlParameterSource();
+        parameters.addValue("top", top);
+        List<User> users = namedJdbcTemplate.query(sql, parameters, (rs, rowNum) ->
+                findUser(rs.getLong("initiator_id")));
+        log.info("Получен рейтинг топ-{} авторов событий: {}", top, users);
+        return UserTopRating.builder()
+                .users(users.stream()
+                        .map(userMapper::toUserShortDto)
+                        .collect(Collectors.toList()))
+                .build();
     }
 
     private User findUser(long userId) {
